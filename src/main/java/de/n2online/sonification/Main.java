@@ -25,6 +25,7 @@ public class Main extends Application {
     private GraphicsContext gc;
     private Keyboard keyboard;
     private Visualization viz;
+    private Motion mot;
 
     public Agent agent;
     public Route route;
@@ -47,7 +48,7 @@ public class Main extends Application {
         gc = screen.getGraphicsContext2D();
 
         viz = new Visualization(gc);
-
+        mot = new Motion();
 
         //Event hooks
 
@@ -62,7 +63,7 @@ public class Main extends Application {
         agent = new Agent(32, 32, Math.toRadians(45));
         route = new Route();
         for (int i = 0; i < 5; i++) {
-            route.addWaypoint(new Waypoint(FastMath.random()*scene.getWidth(), FastMath.random()*scene.getHeight()));
+            route.addWaypoint(new Waypoint(FastMath.random()*screen.getWidth(), FastMath.random()*screen.getHeight()));
         }
 
         //##### LET IT RUN #####
@@ -88,20 +89,7 @@ public class Main extends Application {
                     if (deltaSum >= minDelta) {
                         double partial = deltaSum / 1000.0;
 
-                        if (keyboard.isKeyDown(KeyCode.LEFT))  agent.turn(-partial*agent.maxTurn);
-                        if (keyboard.isKeyDown(KeyCode.RIGHT)) agent.turn(partial*agent.maxTurn);
-
-                        if (keyboard.isKeyDown(KeyCode.UP)) {
-                            agent.speed = agent.maxSpeed;
-                        } else {
-                            agent.speed = 0;
-                        }
-
-                        agent.moveForward(partial);
-                        Waypoint current = route.currentWaypoint();
-                        if (current != null && current.isReached(agent.pos)) {
-                            current.visited = true;
-                        }
+                        mot.handle(partial, keyboard, agent, route);
 
                         //delta "used up"
                         deltaSum = 0;

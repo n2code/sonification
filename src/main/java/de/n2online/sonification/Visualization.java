@@ -31,8 +31,6 @@ public class Visualization {
 
         gc.setFill(Color.GREY);
         gc.fillRect(0, 0, screen.getWidth(), screen.getHeight());
-        gc.setFill(Color.BLUE);
-        gc.fillRect(screen.getWidth()*Math.random(),screen.getHeight()*Math.random(),50,50);
 
         boolean foundNotVisited = false;
         for (Waypoint waypoint : route.getWaypoints()) {
