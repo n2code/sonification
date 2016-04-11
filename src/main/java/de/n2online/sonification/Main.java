@@ -11,7 +11,6 @@ import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.TextArea;
-import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
@@ -90,6 +89,11 @@ public class Main extends Application {
                         double partial = deltaSum / 1000.0;
 
                         mot.handle(partial, keyboard, agent, route);
+
+                        Waypoint target = route.currentWaypoint();
+                        if (target != null){
+                            System.out.println("NEXT UP: distance "+target.pos.distance(agent.pos)+", correction "+Math.toDegrees(target.getAngleCorrection(agent))+"°");
+                        }
 
                         //delta "used up"
                         deltaSum = 0;
