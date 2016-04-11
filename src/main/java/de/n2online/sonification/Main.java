@@ -93,6 +93,8 @@ public class Main extends Application {
                         Waypoint target = route.currentWaypoint();
                         if (target != null){
                             System.out.println("NEXT UP: distance "+target.pos.distance(agent.pos)+", correction "+Math.toDegrees(target.getAngleCorrection(agent))+"°");
+                        } else {
+                            route.addWaypoint(new Waypoint(FastMath.random()*screen.getWidth(), FastMath.random()*screen.getHeight()));
                         }
 
                         //delta "used up"
