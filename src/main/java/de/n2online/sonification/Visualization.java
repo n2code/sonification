@@ -44,7 +44,8 @@ public class Visualization {
                     foundNotVisited = true;
                 }
             }
-            gc.fillOval(waypoint.pos.getX(), waypoint.pos.getY(), Waypoint.thresholdReached, Waypoint.thresholdReached);
+            gc.fillOval(waypoint.pos.getX() - Waypoint.thresholdReached/2, waypoint.pos.getY()-Waypoint.thresholdReached/2,
+                    Waypoint.thresholdReached, Waypoint.thresholdReached);
         }
 
         drawCenteredImage(character, agent.pos.getX(), agent.pos.getY(), agent.getOrientation());
