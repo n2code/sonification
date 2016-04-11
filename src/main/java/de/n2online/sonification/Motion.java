@@ -1,6 +1,7 @@
 package de.n2online.sonification;
 
 import javafx.scene.input.KeyCode;
+import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 
 public class Motion {
 
@@ -15,10 +16,19 @@ public class Motion {
         }
 
         agent.moveForward(stepFraction);
-        Waypoint current = route.currentWaypoint();
-        if (current != null && current.isReached(agent.pos)) {
-            current.visited = true;
+        Waypoint currentWp = route.currentWaypoint();
+        if (currentWp != null) {
+            double distance = currentWp.pos.distance(agent.pos);
+            double angle = Vector2D.angle(currentWp.pos.subtract(agent.pos), agent.pos);
+            double aim = angle - agent.getOrientation();
+            System.out.println("DIST: "+distance+" | ANGLE: "+angle+" | AIM: "+aim);
+
+            if (currentWp.isReached(agent.pos)) {
+                currentWp.visited = true;
+            }
         }
+
+
     }
 
 }
