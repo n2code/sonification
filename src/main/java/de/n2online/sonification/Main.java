@@ -92,8 +92,7 @@ public class Main extends Application {
                             agent.speed = 0;
                         }
 
-                        agent.pos.x += Math.cos(agent.getOrientation()) * partial * agent.speed;
-                        agent.pos.y += Math.sin(agent.getOrientation()) * partial * agent.speed;
+                        agent.moveForward(partial);
 
                         //delta "used up"
                         deltaSum = 0;

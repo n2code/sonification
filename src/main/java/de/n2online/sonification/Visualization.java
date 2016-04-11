@@ -34,7 +34,7 @@ public class Visualization {
         gc.setFill(Color.BLUE);
         gc.fillRect(screen.getWidth()*Math.random(),screen.getHeight()*Math.random(),50,50);
 
-        drawCenteredImage(character, agent.pos.x, agent.pos.y, agent.getOrientation());
+        drawCenteredImage(character, agent.pos.getX(), agent.pos.getY(), agent.getOrientation());
     }
 
 }
