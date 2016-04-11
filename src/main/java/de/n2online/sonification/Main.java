@@ -16,6 +16,7 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import org.apache.commons.math3.util.FastMath;
 
 public class Main extends Application {
     private Parent root;
@@ -26,6 +27,7 @@ public class Main extends Application {
     private Visualization viz;
 
     public Agent agent;
+    public Route route;
 
     @Override
     public void start(Stage stage) throws Exception{
@@ -58,12 +60,15 @@ public class Main extends Application {
         //Data Setup
 
         agent = new Agent(32, 32, Math.toRadians(45));
-
+        route = new Route();
+        for (int i = 0; i < 5; i++) {
+            route.addWaypoint(new Waypoint(FastMath.random()*scene.getWidth(), FastMath.random()*scene.getHeight()));
+        }
 
         //##### LET IT RUN #####
 
         //25FPS wanted :)
-        Timeline timeline = new Timeline(new KeyFrame(Duration.millis(1000/25), evt -> viz.paint(agent)));
+        Timeline timeline = new Timeline(new KeyFrame(Duration.millis(1000/25), evt -> viz.paint(agent, route)));
         timeline.setCycleCount(Animation.INDEFINITE);
         timeline.play();
 
@@ -93,6 +98,10 @@ public class Main extends Application {
                         }
 
                         agent.moveForward(partial);
+                        Waypoint current = route.currentWaypoint();
+                        if (current != null && current.isReached(agent.pos)) {
+                            current.visited = true;
+                        }
 
                         //delta "used up"
                         deltaSum = 0;

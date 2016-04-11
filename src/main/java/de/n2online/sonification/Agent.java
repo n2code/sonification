@@ -8,7 +8,7 @@ public class Agent {
     public double speed; //position units per second
     private double orientation; //angle in radians, 0 is for only x axis movement
     public final double maxTurn = Math.toRadians(90); //maximum turning per second
-    public final double maxSpeed = 50;
+    public static final double maxSpeed = 150;
 
     Agent(double posX, double posY, double angle) {
         pos = new Vector2D(posX, posY);

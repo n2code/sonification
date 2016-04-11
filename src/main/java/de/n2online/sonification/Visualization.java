@@ -26,13 +26,28 @@ public class Visualization {
         gc.restore();
     }
 
-    public void paint(Agent agent) {
+    public void paint(Agent agent, Route route) {
         Canvas screen = gc.getCanvas();
 
         gc.setFill(Color.GREY);
         gc.fillRect(0, 0, screen.getWidth(), screen.getHeight());
         gc.setFill(Color.BLUE);
         gc.fillRect(screen.getWidth()*Math.random(),screen.getHeight()*Math.random(),50,50);
+
+        boolean foundNotVisited = false;
+        for (Waypoint waypoint : route.getWaypoints()) {
+            if (waypoint.visited) {
+                gc.setFill(Color.DARKGREEN);
+            } else {
+                if (foundNotVisited) {
+                    gc.setFill(Color.DARKRED);
+                } else {
+                    gc.setFill(Color.YELLOW);
+                    foundNotVisited = true;
+                }
+            }
+            gc.fillOval(waypoint.pos.getX(), waypoint.pos.getY(), Waypoint.thresholdReached, Waypoint.thresholdReached);
+        }
 
         drawCenteredImage(character, agent.pos.getX(), agent.pos.getY(), agent.getOrientation());
     }
