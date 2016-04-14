@@ -1,0 +1,28 @@
+apply plugin: 'scala'
+apply plugin: 'idea'
+
+repositories{
+    mavenCentral()
+    mavenLocal()
+}
+
+sourceSets {
+  main {
+    resources {
+        srcDirs = ["src/main/resources"]
+        includes = ["**/*"]
+    }
+  }
+}
+
+dependencies{
+    compile "org.scala-lang:scala-library:2.11.8"
+    compile "org.scala-lang:scala-compiler:2.11.8"
+    compile "org.apache.commons:commons-math3:3.6.1"
+}
+
+task run(type: JavaExec, dependsOn: classes) {
+    main = 'Main'
+    classpath sourceSets.main.runtimeClasspath
+    classpath configurations.runtime
+}
