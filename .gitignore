@@ -1,0 +1,7 @@
+# sledge hammer solution
+/.idea/
+/.gradle/
+
+# output
+/build/
+/out/
