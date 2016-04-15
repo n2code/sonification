@@ -5,7 +5,7 @@ import javafx.scene.input.KeyCode
 class Motion {
   private var activeAi: Boolean = false
 
-  def handle(stepFraction: Double, keyboard: Nothing, agent: Nothing, route: Route) {
+  def handle(stepFraction: Double, keyboard: Keyboard, agent: Agent, route: Route) {
     if (keyboard.isKeyDown(KeyCode.LEFT)) agent.turn(stepFraction * -agent.maxTurn)
     if (keyboard.isKeyDown(KeyCode.RIGHT)) agent.turn(stepFraction * agent.maxTurn)
     if (keyboard.isKeyDown(KeyCode.UP)) {

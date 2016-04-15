@@ -7,12 +7,12 @@ object Waypoint {
   val thresholdReached: Double = 30
 }
 
-class Waypoint private[sonification](val x: Double, val y: Double) {
-  pos = new Nothing(x, y)
+class Waypoint (val x: Double, val y: Double) {
+  pos = new Vector2D(x, y)
   var pos: Nothing = null
   var visited: Boolean = false
 
-  def isReached(compare: Nothing): Boolean = {
+  def isReached(compare: Vector2D): Boolean = {
     if (compare.distance(pos) <= Waypoint.thresholdReached) {
       return true
     }
@@ -21,7 +21,7 @@ class Waypoint private[sonification](val x: Double, val y: Double) {
     }
   }
 
-  def getAngleCorrection(agent: Nothing): Double = {
+  def getAngleCorrection(agent: Agent): Double = {
     val normHoming: Nothing = this.pos.subtract(agent.pos).normalize
     var angleHoming: Double = Vector2D.angle(normHoming, new Nothing(1, 0))
     angleHoming *= (if (agent.pos.getY < this.pos.getY) 1

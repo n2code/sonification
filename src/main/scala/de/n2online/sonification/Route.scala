@@ -1,17 +1,16 @@
 package de.n2online.sonification
 
-import java.util.LinkedList
+import scala.collection.mutable.MutableList
 import java.util.List
 
-class Route private[sonification] {
-  waypoints = new util.LinkedList[Waypoint]
-  private var waypoints: util.LinkedList[Waypoint] = null
+class Route {
+  private var waypoints: MutableList[Waypoint] = null
 
   def addWaypoint(waypoint: Waypoint) {
-    waypoints.add(waypoint)
+    waypoints += waypoint
   }
 
-  def getWaypoints: util.List[Waypoint] = {
+  def getWaypoints: MutableList[Waypoint] = {
     return waypoints
   }
 
@@ -19,8 +18,8 @@ class Route private[sonification] {
     var i: Int = 0
     while (i < waypoints.size) {
       {
-        if (!waypoints.get(i).visited) {
-          return waypoints.get(i)
+        if (!waypoints(i).visited) {
+          return waypoints(i)
         }
       }
       ({

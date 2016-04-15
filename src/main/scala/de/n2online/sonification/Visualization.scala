@@ -20,7 +20,7 @@ class Visualization(val gc: GraphicsContext) {
     gc.restore
   }
 
-  def paint(agent: Nothing, route: Route) {
+  def paint(agent: Agent, route: Route) {
     val screen: Canvas = gc.getCanvas
     gc.setFill(Color.GREY)
     gc.fillRect(0, 0, screen.getWidth, screen.getHeight)

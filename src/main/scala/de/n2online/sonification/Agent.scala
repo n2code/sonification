@@ -7,11 +7,9 @@ object Agent {
   val maxSpeed: Double = 150
 }
 
-class Agent private[sonification](val posX: Double, val posY: Double, var orientation: Double) {
-  pos = new Nothing(posX, posY)
-  speed = 0
-  var pos: Nothing = null
-  var speed: Double = .0
+class Agent (val posX: Double, val posY: Double, var orientation: Double) {
+  var pos: Vector2D = new Vector2D(posX, posY)
+  var speed: Double = 0
   final val maxTurn: Double = Math.toRadians(90)
 
   def getOrientation: Double = {
