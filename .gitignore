@@ -1,6 +1,9 @@
 # sledge hammer solution
 /.idea/
 /.gradle/
+/gradle/
+/gradlew
+/gradlew.bat
 
 # output
 /build/

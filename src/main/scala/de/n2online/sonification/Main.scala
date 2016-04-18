@@ -5,7 +5,7 @@ import javafx.animation.AnimationTimer
 import javafx.animation.KeyFrame
 import javafx.animation.Timeline
 import javafx.application.Application
-import javafx.event.EventHandler
+import javafx.event.{ActionEvent, EventHandler}
 import javafx.fxml.FXMLLoader
 import javafx.scene.Parent
 import javafx.scene.Scene
@@ -24,6 +24,7 @@ object Sonification {
     Application.launch(classOf[Main], args: _*)
   }
 }
+
 
 class Main extends Application {
   private var root: Parent = null
@@ -55,45 +56,57 @@ class Main extends Application {
     mot = new Motion
 
     keyboard = new Keyboard
-    //TODO
-    //scene.addEventFilter(KeyEvent.KEY_PRESSED, (evt: KeyEvent) => keyboard.registerKeyDown(_))
-    //scene.addEventFilter(KeyEvent.KEY_RELEASED, (evt: KeyEvent) => keyboard.registerKeyUp(_))
+    scene.addEventFilter(KeyEvent.KEY_PRESSED, new EventHandler[KeyEvent] {
+      override def handle(evt: KeyEvent): Unit = keyboard.registerKeyDown(evt)
+    })
+    scene.addEventFilter(KeyEvent.KEY_RELEASED, new EventHandler[KeyEvent] {
+      override def handle(evt: KeyEvent): Unit = keyboard.registerKeyUp(evt)
+    })
 
     agent = new Agent(32, 32, Math.toRadians(45))
 
     route = new Route
-    1 to 5 foreach { _ => route.addWaypoint(new Waypoint(FastMath.random * screen.getWidth, FastMath.random * screen.getHeight)) }
+    1 to 2 foreach { _ => route.addWaypoint(new Waypoint(FastMath.random * screen.getWidth, FastMath.random * screen.getHeight)) }
 
-    //TODO
-    //val keyframe: KeyFrame = new KeyFrame(Duration.millis(1000 / 25), viz.paint(agent, route))
-    //val timeline: Timeline = new Timeline(keyframe)
-    //timeline.setCycleCount(Animation.INDEFINITE)
-    //timeline.play
-    val physics: AnimationTimer = new AnimationTimer() {
+    val keyframe: KeyFrame = new KeyFrame(Duration.millis(1000 / 25), new EventHandler[ActionEvent] {
+      override def handle(t: ActionEvent): Unit = viz.paint(agent, route)
+    })
+    val timeline: Timeline = new Timeline(keyframe)
+    timeline.setCycleCount(Animation.INDEFINITE)
+    timeline.play
+    val simloop: AnimationTimer = new AnimationTimer() {
       private var last: Long = 0
       private
       var deltaSum: Long = 0
+      var reportSum: Long = 0
       final
       private val minDelta: Long = 10
       def handle(tstamp: Long) {
         val now = tstamp / 1000000
         if (last != 0) {
-          deltaSum += now - last
+          val delta = now - last
+          deltaSum += delta
+          reportSum += delta
           if (deltaSum >= minDelta) {
             val partial: Double = deltaSum / 1000.0
-            if (route.getWaypoints.isEmpty) {
-              route.addWaypoint(new Waypoint(FastMath.random * screen.getWidth, FastMath.random * screen.getHeight))
-            }
-            mot.handle(partial, keyboard, agent, route)
             val target: Waypoint = route.currentWaypoint
-            println("NEXT UP: distance " + target.pos.distance(agent.pos) + ", correction " + Math.toDegrees(target.getAngleCorrection(agent)) + "°")
+            if (target == null) {
+              route.addWaypoint(new Waypoint(FastMath.random * screen.getWidth, FastMath.random * screen.getHeight))
+              println("Added new waypoint.")
+            } else {
+              mot.handle(partial, keyboard, agent, route)
+              if (reportSum > 500) {
+                println("NEXT UP: distance " + target.pos.distance(agent.pos) + ", correction " + Math.toDegrees(target.getAngleCorrection(agent)) + "°")
+                reportSum = 0
+              }
+            }
             deltaSum = 0
           }
         }
         last = now
       }
     }
-    physics.start
+    simloop.start
   }
 
   def log(line: String) {
