@@ -7,13 +7,14 @@ object Agent {
   val maxSpeed: Double = 150
 }
 
-class Agent (val posX: Double, val posY: Double, var orientation: Double) {
+class Agent (val posX: Double, val posY: Double, var initialOrientation: Double) {
   var pos: Vector2D = new Vector2D(posX, posY)
   var speed: Double = 0
-  final val maxTurn: Double = Math.toRadians(90)
+  val maxTurn: Double = Math.toRadians(90)
+  var orientation: Double = initialOrientation
 
   def getOrientation: Double = {
-    return orientation
+    orientation
   }
 
   def turn(angle: Double) {
@@ -27,6 +28,6 @@ class Agent (val posX: Double, val posY: Double, var orientation: Double) {
   }
 
   def moveForward(moveFraction: Double) {
-    pos = pos.add(moveFraction * speed, new Nothing(FastMath.cos(orientation), FastMath.sin(orientation)))
+    pos = pos.add(moveFraction * speed, new Vector2D(FastMath.cos(orientation), FastMath.sin(orientation)))
   }
 }

@@ -22,11 +22,8 @@ class Motion {
       agent.speed = Math.min(Math.max(Waypoint.thresholdReached * stepFraction, agent.speed), Agent.maxSpeed)
     }
     agent.moveForward(stepFraction)
-    val currentWp: Waypoint = route.currentWaypoint
-    if (currentWp != null) {
-      if (currentWp.isReached(agent.pos)) {
-        currentWp.visited = true
-      }
+    if (route.currentWaypoint.isReached(agent.pos)) {
+      route.currentWaypoint.visited = true
     }
   }
 }

@@ -4,7 +4,7 @@ import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyEvent
 
 class Keyboard {
-  private var activeCodes: Set[KeyCode] = null
+  private var activeCodes: Set[KeyCode] = Set()
 
   def registerKeyDown(event: KeyEvent) {
     activeCodes = activeCodes + event.getCode

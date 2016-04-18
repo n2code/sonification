@@ -7,8 +7,7 @@ import javafx.scene.paint.Color
 import javafx.scene.transform.Rotate
 
 class Visualization(val gc: GraphicsContext) {
-  character = new Image(getClass.getResourceAsStream("/agent.png"))
-  private var character: Image = null
+  val character = new Image(getClass.getResourceAsStream("/agent.png"))
 
   private def drawCenteredImage(image: Image, center_x: Double, center_y: Double, angle: Double) {
     gc.save
@@ -25,7 +24,6 @@ class Visualization(val gc: GraphicsContext) {
     gc.setFill(Color.GREY)
     gc.fillRect(0, 0, screen.getWidth, screen.getHeight)
     var foundNotVisited: Boolean = false
-    import scala.collection.JavaConversions._
     for (waypoint <- route.getWaypoints) {
       if (waypoint.visited) {
         gc.setFill(Color.DARKGREEN)

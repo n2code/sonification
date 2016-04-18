@@ -1,31 +1,17 @@
 package de.n2online.sonification
 
 import scala.collection.mutable.MutableList
-import java.util.List
 
 class Route {
-  private var waypoints: MutableList[Waypoint] = null
+  private var waypoints: MutableList[Waypoint] = new MutableList[Waypoint]
 
   def addWaypoint(waypoint: Waypoint) {
     waypoints += waypoint
   }
 
-  def getWaypoints: MutableList[Waypoint] = {
-    return waypoints
-  }
+  def getWaypoints = waypoints
 
   def currentWaypoint: Waypoint = {
-    var i: Int = 0
-    while (i < waypoints.size) {
-      {
-        if (!waypoints(i).visited) {
-          return waypoints(i)
-        }
-      }
-      ({
-        i += 1; i - 1
-      })
-    }
-    return null
+    waypoints.find(_.visited == false).orNull
   }
 }

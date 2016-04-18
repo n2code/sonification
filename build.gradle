@@ -22,7 +22,7 @@ dependencies{
 }
 
 task run(type: JavaExec, dependsOn: classes) {
-    main = 'Main'
+    main = "de.n2online.sonification.Sonification"
     classpath sourceSets.main.runtimeClasspath
     classpath configurations.runtime
 }
