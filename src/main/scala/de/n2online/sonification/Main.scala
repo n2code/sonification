@@ -19,27 +19,8 @@ import javafx.util.Duration
 
 import org.apache.commons.math3.util.FastMath
 
-import de.sciss.synth._
-import ugen._
-import Ops._
-
 object Sonification {
   def main(args: Array[String]) {
-    val cfg = Server.Config()
-    cfg.program = "/usr/bin/scsynth"
-    // runs a server and executes the function
-    // when the server is booted, with the
-    // server as its argument
-    Server.run(cfg) { s =>
-      // play is imported from package de.sciss.synth.
-      // it provides a convenience method for wrapping
-      // a synth graph function in an `Out` element
-      // and playing it back.
-      play {
-        val f = LFSaw.kr(0.4).madd(24, LFSaw.kr(Seq(8, 7.23)).madd(3, 80)).midicps
-        CombN.ar(SinOsc.ar(f) * 0.04, 0.2, 0.2, 4)
-      }
-    }
     Application.launch(classOf[Main], args: _*)
   }
 }
@@ -53,6 +34,7 @@ class Main extends Application {
   private var keyboard: Keyboard = null
   private var viz: Visualization = null
   private var mot: Motion = null
+  private var sou = new SoundGenerator
   var agent: Agent = null
   var route: Route = null
 
@@ -115,7 +97,9 @@ class Main extends Application {
             } else {
               mot.handle(partial, keyboard, agent, route)
               if (reportSum > 500) {
-                println("NEXT UP: distance " + target.pos.distance(agent.pos) + ", correction " + Math.toDegrees(target.getAngleCorrection(agent)) + "°")
+                val newFactor = FastMath.max(0.0, 400.0-target.pos.distance(agent.pos)) / 400
+                println("NEXT UP: distance " + target.pos.distance(agent.pos) + ", correction " + Math.toDegrees(target.getAngleCorrection(agent)) + "°, vol "+newFactor)
+                sou.setVol(newFactor)
                 reportSum = 0
               }
             }

@@ -13,9 +13,7 @@ class Agent (val posX: Double, val posY: Double, var initialOrientation: Double)
   val maxTurn: Double = Math.toRadians(90)
   var orientation: Double = initialOrientation
 
-  def getOrientation: Double = {
-    orientation
-  }
+  def getOrientation: Double = orientation
 
   def turn(angle: Double) {
     orientation += angle
