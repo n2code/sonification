@@ -17,6 +17,7 @@ import javafx.scene.layout.AnchorPane
 import javafx.stage.Stage
 import javafx.util.Duration
 
+import de.n2online.sonification.generators.PanningSaws
 import org.apache.commons.math3.util.FastMath
 
 object Sonification {
@@ -34,7 +35,7 @@ class Main extends Application {
   private var keyboard: Keyboard = null
   private var viz: Visualization = null
   private var mot: Motion = null
-  private var sou = new SoundGenerator
+  private val sman = new SoundManager
   var agent: Agent = null
   var route: Route = null
 
@@ -72,6 +73,8 @@ class Main extends Application {
     route = new Route
     1 to 2 foreach { _ => route.addWaypoint(new Waypoint(FastMath.random * screen.getWidth, FastMath.random * screen.getHeight)) }
 
+    sman.setGenerator(new PanningSaws)
+
     val keyframe: KeyFrame = new KeyFrame(Duration.millis(1000 / 25), new EventHandler[ActionEvent] {
       override def handle(t: ActionEvent): Unit = viz.paint(agent, route)
     })
@@ -80,9 +83,8 @@ class Main extends Application {
     timeline.play
     val simloop: AnimationTimer = new AnimationTimer() {
       private var last: Long = 0
-      private
-      var deltaSum: Long = 0
-      var reportSum: Long = 0
+      private var deltaSum: Long = 0
+      var reducedLogSum: Long = 0
       final
       private val minDelta: Long = 10
       def handle(tstamp: Long) {
@@ -90,7 +92,7 @@ class Main extends Application {
         if (last != 0) {
           val delta = now - last
           deltaSum += delta
-          reportSum += delta
+          reducedLogSum += delta
           if (deltaSum >= minDelta) {
             val partial: Double = deltaSum / 1000.0
             val target: Waypoint = route.currentWaypoint.orNull
@@ -99,11 +101,12 @@ class Main extends Application {
               println("Added new waypoint.")
             } else {
               mot.handle(partial, keyboard, agent, route)
-              if (reportSum > 500) {
-                val newFactor = FastMath.max(0.0, 400.0-target.pos.distance(agent.pos)) / 400
-                println("NEXT UP: distance " + target.pos.distance(agent.pos) + ", correction " + Math.toDegrees(target.getAngleCorrection(agent)) + "°, vol "+newFactor)
-                sou.setVol(newFactor)
-                reportSum = 0
+              if (sman.generator.isDefined) {
+                sman.generator.get.update(target.pos.distance(agent.pos))
+              }
+              if (reducedLogSum > 500) {
+                println("NEXT UP: distance " + target.pos.distance(agent.pos) + ", correction " + Math.toDegrees(target.getAngleCorrection(agent)) + "°")
+                reducedLogSum = 0
               }
             }
             deltaSum = 0
