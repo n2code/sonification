@@ -3,7 +3,6 @@ package de.n2online.sonification
 import de.sciss.synth._
 import ugen._
 import Ops._
-import de.sciss.synth.ServerConnection.Listener
 
 class SoundGenerator {
   var synth = None: Option[Synth]
@@ -29,7 +28,7 @@ class SoundGenerator {
             VarSaw.ar(freq = List.fill(2)(freq * LinRand(0.99, 1.02)), iphase = 0, width = 0.05) +
             VarSaw.ar(freq = List.fill(2)(freq * LinRand(0.99, 1.02)), iphase = 0, width = 0.05) +
             VarSaw.ar(freq = List.fill(2)(freq * LinRand(0.99, 1.02)), iphase = 0, width = 0.05)
-        Out.ar(outChannel, acc * (1.0 / numSaws) * "factor".kr(0.0))
+        Out.ar(outChannel, acc * (1.0 / numSaws) * "factor".kr(1.0))
       })
       synth = Some(sawdef.get.play())
   }

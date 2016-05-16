@@ -11,7 +11,7 @@ class Route {
 
   def getWaypoints = waypoints
 
-  def currentWaypoint: Waypoint = {
-    waypoints.find(_.visited == false).orNull
+  def currentWaypoint: Option[Waypoint] = {
+    waypoints.find(_.visited == false)
   }
 }

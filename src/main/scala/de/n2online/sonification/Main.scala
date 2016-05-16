@@ -93,7 +93,7 @@ class Main extends Application {
           reportSum += delta
           if (deltaSum >= minDelta) {
             val partial: Double = deltaSum / 1000.0
-            val target: Waypoint = route.currentWaypoint
+            val target: Waypoint = route.currentWaypoint.orNull
             if (target == null) {
               route.addWaypoint(new Waypoint(FastMath.random * screen.getWidth, FastMath.random * screen.getHeight))
               println("Added new waypoint.")
