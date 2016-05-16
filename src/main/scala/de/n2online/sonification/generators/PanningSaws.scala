@@ -7,8 +7,8 @@ import Ops._
 import org.apache.commons.math3.util.FastMath
 
 class PanningSaws extends Generator {
-  var synth = None: Option[Synth]
-  var sawdef = None: Option[SynthDef]
+  private var synth = None: Option[Synth]
+  private var sawdef = None: Option[SynthDef]
 
   override def initialize(server: Server): Unit = {
     sawdef = Some(SynthDef("MegaSaw") {

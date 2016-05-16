@@ -8,12 +8,9 @@ class Motion {
   def handle(stepFraction: Double, keyboard: Keyboard, agent: Agent, route: Route) {
     if (keyboard.isKeyDown(KeyCode.LEFT)) agent.turn(stepFraction * -agent.maxTurnPerSecond)
     if (keyboard.isKeyDown(KeyCode.RIGHT)) agent.turn(stepFraction * agent.maxTurnPerSecond)
-    if (keyboard.isKeyDown(KeyCode.UP)) {
-      agent.speed = Agent.maxSpeed
-    }
-    else {
-      agent.speed = 0
-    }
+
+    agent.speed = if (keyboard.isKeyDown(KeyCode.UP)) Agent.maxSpeed else 0
+
     if (keyboard.isKeyDown(KeyCode.SPACE)) activeAi = true
 
     route.currentWaypoint match {

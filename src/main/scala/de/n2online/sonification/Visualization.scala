@@ -7,7 +7,7 @@ import javafx.scene.paint.Color
 import javafx.scene.transform.Rotate
 
 class Visualization(val gc: GraphicsContext) {
-  val character = new Image(getClass.getResourceAsStream("/agent.png"))
+  private val character = new Image(getClass.getResourceAsStream("/agent.png"))
 
   private def drawCenteredImage(image: Image, center_x: Double, center_y: Double, angle: Double) {
     gc.save()

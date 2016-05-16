@@ -44,6 +44,8 @@ class Main extends Application {
 
   @throws[Exception]
   def start(stage: Stage) {
+    //GUI init
+
     root = FXMLLoader.load(getClass.getResource("/Main.fxml"))
     stage.setTitle("Sonification")
     scene = new Scene(root, 800, 600)
@@ -58,6 +60,8 @@ class Main extends Application {
     gc = screen.getGraphicsContext2D
     viz = new Visualization(gc)
 
+    //handling movement and input
+
     mot = new Motion
 
     keyboard = new Keyboard
@@ -68,49 +72,66 @@ class Main extends Application {
       override def handle(evt: KeyEvent): Unit = keyboard.registerKeyUp(evt)
     })
 
+    //world data
+
     agent = new Agent(32, 32, Math.toRadians(45))
 
     route = new Route
     1 to 2 foreach { _ => route.addWaypoint(new Waypoint(FastMath.random * screen.getWidth, FastMath.random * screen.getHeight)) }
 
+    //sound!
+
     sman.setGenerator(new PanningSaws)
 
+    //timers
+
+    //animation:
     val keyframe: KeyFrame = new KeyFrame(Duration.millis(1000 / 25), new EventHandler[ActionEvent] {
       override def handle(t: ActionEvent): Unit = viz.paint(agent, route)
     })
+
     val timeline: Timeline = new Timeline(keyframe)
     timeline.setCycleCount(Animation.INDEFINITE)
     timeline.play
-    val simloop: AnimationTimer = new AnimationTimer() {
+
+    //calculation (sim & sound) :
+    val simloop = new AnimationTimer() {
+
       private var last: Long = 0
       private var deltaSum: Long = 0
-      var reducedLogSum: Long = 0
-      final
-      private val minDelta: Long = 10
+      private val recalcThreshold: Long = 10
+      private var reducedLogSum: Long = 0
+
       def handle(tstamp: Long) {
         val now = tstamp / 1000000
         if (last != 0) {
           val delta = now - last
           deltaSum += delta
           reducedLogSum += delta
-          if (deltaSum >= minDelta) {
+
+          if (deltaSum >= recalcThreshold) {
             val partial: Double = deltaSum / 1000.0
-            val target: Waypoint = route.currentWaypoint.orNull
-            if (target == null) {
-              route.addWaypoint(new Waypoint(FastMath.random * screen.getWidth, FastMath.random * screen.getHeight))
-              println("Added new waypoint.")
-            } else {
-              mot.handle(partial, keyboard, agent, route)
-              if (sman.generator.isDefined) {
-                sman.generator.get.update(target.pos.distance(agent.pos))
+
+            route.currentWaypoint match {
+              case Some(target) => {
+                mot.handle(partial, keyboard, agent, route)
+                if (sman.getGenerator.isDefined) {
+                  sman.getGenerator.get.update(target.pos.distance(agent.pos))
+                }
+                if (reducedLogSum > 500) {
+                  println("NEXT UP: distance " + target.pos.distance(agent.pos) + ", correction " + Math.toDegrees(target.getAngleCorrection(agent)) + "°")
+                  reducedLogSum = 0
+                }
               }
-              if (reducedLogSum > 500) {
-                println("NEXT UP: distance " + target.pos.distance(agent.pos) + ", correction " + Math.toDegrees(target.getAngleCorrection(agent)) + "°")
-                reducedLogSum = 0
+              case None => {
+                route.addWaypoint(new Waypoint(FastMath.random * screen.getWidth, FastMath.random * screen.getHeight))
+                println("Added new waypoint.")
               }
             }
+
             deltaSum = 0
           }
+
         }
         last = now
       }
