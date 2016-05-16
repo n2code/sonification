@@ -4,7 +4,7 @@ import javafx.animation.Animation
 import javafx.animation.AnimationTimer
 import javafx.animation.KeyFrame
 import javafx.animation.Timeline
-import javafx.application.Application
+import javafx.application.{Application, Platform}
 import javafx.event.{ActionEvent, EventHandler}
 import javafx.fxml.FXMLLoader
 import javafx.scene.Parent
@@ -37,6 +37,9 @@ class Main extends Application {
   private var sou = new SoundGenerator
   var agent: Agent = null
   var route: Route = null
+
+  override def stop(): Unit = {
+  }
 
   @throws[Exception]
   def start(stage: Stage) {
