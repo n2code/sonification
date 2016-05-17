@@ -1,7 +1,6 @@
 package de.n2online.sonification
 
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D
-import org.apache.commons.math3.util.FastMath
 
 import scala.util.Random
 
@@ -11,7 +10,7 @@ object MeshBuilder {
                     topleft: Vector2D,
                     width: Double, height: Double,
                     cellNumX: Option[Int] = None, cellNumY: Option[Int] = None
-                   ): List[Cell] = {
+                   ): List[Node] = {
     //settings
     val defaultCellSize = 200 //used if no number of cells per dimension is given
     val centerVariance = 0.4 //center varied by 40% of the cells width and height
@@ -51,14 +50,14 @@ object MeshBuilder {
         (cell.x-1 to cell.x+1).contains(target.x) //neighbourhood constraint X
         && (cell.y-1 to cell.y+1).contains(target.y) //neighbourhood constraint Y
         && target.node.isDefined //node exists
-        && cell != target //...and no reflexive edge relation please :)
+        && (cell.x, cell.y) != (target.x, target.y) //...and no reflexive edge relation please :)
       )) yield Edge(cell.node.get, validTarget.node.get)
 
       //and finally do what we came for: update the current cells edges
       cell.node.get.edges = targets.toSet
     })
 
-    cells
+    cells.flatMap(_.node)
   }
 
 }
