@@ -7,8 +7,8 @@ object Waypoint {
   val thresholdReached: Double = 30
 }
 
-class Waypoint (val x: Double, val y: Double) {
-  var node = new Node(x, y)
+class Waypoint (centerNode: Node) {
+  val node = centerNode
   var visited: Boolean = false
 
   def isReached(compare: Vector2D): Boolean = compare.distance(node.pos) <= Waypoint.thresholdReached

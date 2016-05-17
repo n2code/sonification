@@ -6,13 +6,14 @@ import scala.util.Random
 
 object MeshBuilder {
 
-  def getRandomMesh(seed: Int = Random.nextInt(),
+  def getRandomMesh(
                     topleft: Vector2D,
                     width: Double, height: Double,
-                    cellNumX: Option[Int] = None, cellNumY: Option[Int] = None
+                    cellNumX: Option[Int] = None, cellNumY: Option[Int] = None,
+                    seed: Int = Random.nextInt()
                    ): List[Node] = {
     //settings
-    val defaultCellSize = 200 //used if no number of cells per dimension is given
+    val defaultCellSize = 100 //used if no number of cells per dimension is given
     val centerVariance = 0.4 //center varied by 40% of the cells width and height
     val pCellEmpty = 0.05 //chance that a cell contains no node
 
@@ -20,7 +21,7 @@ object MeshBuilder {
     val rnd = new Random(seed)
     def randomVariance: Double = {
       //random signed variance < abs(centerVariance)
-      rnd.nextDouble()*2*randomVariance - randomVariance
+      rnd.nextDouble()*2*centerVariance - centerVariance
     }
 
     //calculate dimensions

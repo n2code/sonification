@@ -4,6 +4,7 @@ import javafx.scene.canvas.Canvas
 import javafx.scene.canvas.GraphicsContext
 import javafx.scene.image.Image
 import javafx.scene.paint.Color
+import javafx.scene.shape.StrokeLineCap
 import javafx.scene.transform.Rotate
 
 class Visualization(val gc: GraphicsContext) {
@@ -19,12 +20,21 @@ class Visualization(val gc: GraphicsContext) {
     gc.restore()
   }
 
-  def paint(agent: Agent, route: Route) {
+  def paint(agent: Agent, route: Route, nodes: Traversable[Node]) {
     val screen: Canvas = gc.getCanvas
 
     //background
     gc.setFill(Color.GREY)
     gc.fillRect(0, 0, screen.getWidth, screen.getHeight)
+
+    //node mesh
+    gc.setStroke(Color.DARKGRAY)
+    for (node <- nodes)
+      for (edge <- node.edges)
+        gc.strokeLine(edge.from.pos.getX, edge.from.pos.getY, edge.to.pos.getX, edge.to.pos.getY)
+    gc.setFill(Color.BLACK)
+    for (node <- nodes)
+      gc.fillOval(node.pos.getX - 5, node.pos.getY - 5, 10, 10)
 
     //waypoints
     for (waypoint <- route.getWaypoints) {
@@ -33,7 +43,12 @@ class Visualization(val gc: GraphicsContext) {
         else if (waypoint == route.currentWaypoint.orNull) Color.YELLOW
         else Color.DARKRED
       gc.setFill(color)
-      gc.fillOval(waypoint.node.pos.getX - Waypoint.thresholdReached / 2, waypoint.node.pos.getY - Waypoint.thresholdReached / 2, Waypoint.thresholdReached, Waypoint.thresholdReached)
+      gc.fillOval(
+        waypoint.node.pos.getX - Waypoint.thresholdReached / 2,
+        waypoint.node.pos.getY - Waypoint.thresholdReached / 2,
+        Waypoint.thresholdReached,
+        Waypoint.thresholdReached
+      )
     }
 
     //agent

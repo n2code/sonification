@@ -18,7 +18,12 @@ import javafx.stage.Stage
 import javafx.util.Duration
 
 import de.n2online.sonification.generators.PanningSaws
+import org.apache.commons.math3.geometry.euclidean.twod.Vector2D
 import org.apache.commons.math3.util.FastMath
+
+import scala.util.Random
+import scala.util.{Success, Failure}
+import scala.concurrent.ExecutionContext.Implicits.global
 
 object Sonification {
   def main(args: Array[String]) {
@@ -77,7 +82,13 @@ class Main extends Application {
     agent = new Agent(32, 32, Math.toRadians(45))
 
     route = new Route
-    1 to 2 foreach { _ => route.addWaypoint(new Waypoint(FastMath.random * screen.getWidth, FastMath.random * screen.getHeight)) }
+    val mesh = MeshBuilder.getRandomMesh(new Vector2D(0,0), screen.getWidth, screen.getHeight)
+    println(mesh)
+    val randomNodes = Random.shuffle(mesh.indices.toList).take(mesh.length/3).map(mesh(_))
+    randomNodes.foreach { node => {
+      route.addWaypoint(new Waypoint(node))
+    } }
+    println(s"Random route with ${randomNodes.length} waypoints initialized")
 
     //sound!
 
@@ -87,7 +98,7 @@ class Main extends Application {
 
     //animation:
     val keyframe: KeyFrame = new KeyFrame(Duration.millis(1000 / 25), new EventHandler[ActionEvent] {
-      override def handle(t: ActionEvent): Unit = viz.paint(agent, route)
+      override def handle(t: ActionEvent): Unit = viz.paint(agent, route, mesh)
     })
 
     val timeline: Timeline = new Timeline(keyframe)
@@ -124,7 +135,7 @@ class Main extends Application {
                 }
               }
               case None => {
-                route.addWaypoint(new Waypoint(FastMath.random * screen.getWidth, FastMath.random * screen.getHeight))
+                route.addWaypoint(new Waypoint(new Node(FastMath.random * screen.getWidth, FastMath.random * screen.getHeight)))
                 println("Added new waypoint.")
               }
             }
@@ -136,7 +147,14 @@ class Main extends Application {
         last = now
       }
     }
-    simloop.start
+    val booted = sman.isReady()
+    booted.onComplete {
+      case Success(true) => {
+        println("Booting future complete")
+        simloop.start()
+      }
+      case Failure(ex) => println("Booting failed")
+    }
   }
 
   def log(line: String) {

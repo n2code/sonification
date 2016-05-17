@@ -2,6 +2,9 @@ package de.n2online.sonification
 
 import de.sciss.synth._
 
+import scala.concurrent.{Future, Promise}
+import scala.concurrent.ExecutionContext.Implicits.global
+
 class SoundManager {
 
   private val cfg = Server.Config()
@@ -22,6 +25,14 @@ class SoundManager {
       }
     }
     serverConnection(li)
+  }
+
+  def isReady(): Future[Boolean] = {
+    val p = Promise[Boolean]()
+    Future {
+      execute((s: Server) => { p.success(true) })
+    }
+    p.future
   }
 
   def getGenerator = generator
