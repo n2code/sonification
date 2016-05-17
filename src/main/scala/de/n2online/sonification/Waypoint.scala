@@ -8,14 +8,14 @@ object Waypoint {
 }
 
 class Waypoint (val x: Double, val y: Double) {
-  var pos: Vector2D = new Vector2D(x, y)
+  var node = new Node(x, y)
   var visited: Boolean = false
 
-  def isReached(compare: Vector2D): Boolean = compare.distance(pos) <= Waypoint.thresholdReached
+  def isReached(compare: Vector2D): Boolean = compare.distance(node.pos) <= Waypoint.thresholdReached
 
   def getAngleCorrection(agent: Agent): Double = {
-    val normalizedHoming: Vector2D = this.pos.subtract(agent.pos).normalize
-    val angleHoming: Double = Vector2D.angle(normalizedHoming, new Vector2D(1, 0)) * (if (agent.pos.getY < this.pos.getY) 1 else -1)
+    val normalizedHoming: Vector2D = this.node.pos.subtract(agent.pos).normalize
+    val angleHoming: Double = Vector2D.angle(normalizedHoming, new Vector2D(1, 0)) * (if (agent.pos.getY < this.node.pos.getY) 1 else -1)
     MathUtils.normalizeAngle(angleHoming - agent.getOrientation, 0.0)
   }
 }

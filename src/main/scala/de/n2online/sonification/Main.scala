@@ -116,10 +116,10 @@ class Main extends Application {
               case Some(target) => {
                 mot.handle(partial, keyboard, agent, route)
                 if (sman.getGenerator.isDefined) {
-                  sman.getGenerator.get.update(target.pos.distance(agent.pos))
+                  sman.getGenerator.get.update(target.node.pos.distance(agent.pos))
                 }
                 if (reducedLogSum > 500) {
-                  println("NEXT UP: distance " + target.pos.distance(agent.pos) + ", correction " + Math.toDegrees(target.getAngleCorrection(agent)) + "°")
+                  println("NEXT UP: distance " + target.node.pos.distance(agent.pos) + ", correction " + Math.toDegrees(target.getAngleCorrection(agent)) + "°")
                   reducedLogSum = 0
                 }
               }

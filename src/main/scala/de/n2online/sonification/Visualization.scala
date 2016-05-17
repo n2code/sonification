@@ -33,7 +33,7 @@ class Visualization(val gc: GraphicsContext) {
         else if (waypoint == route.currentWaypoint.orNull) Color.YELLOW
         else Color.DARKRED
       gc.setFill(color)
-      gc.fillOval(waypoint.pos.getX - Waypoint.thresholdReached / 2, waypoint.pos.getY - Waypoint.thresholdReached / 2, Waypoint.thresholdReached, Waypoint.thresholdReached)
+      gc.fillOval(waypoint.node.pos.getX - Waypoint.thresholdReached / 2, waypoint.node.pos.getY - Waypoint.thresholdReached / 2, Waypoint.thresholdReached, Waypoint.thresholdReached)
     }
 
     //agent
