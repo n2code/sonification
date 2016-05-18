@@ -38,7 +38,6 @@ class PathRecorder {
   }
 
   def getPath = {
-    assert(path.length>0)
     path.toList
   }
 }

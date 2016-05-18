@@ -14,7 +14,7 @@ object MeshBuilder {
                    ): List[Node] = {
     //settings
     val defaultCellSize = 100 //used if no number of cells per dimension is given
-    val centerVariance = 0.4 //center varied by 40% of the cells width and height
+    val centerVariance = 0.3 //center varied by 30% of the cells width and height
     val pCellEmpty = 0.05 //chance that a cell contains no node
 
     //reproducable randomness

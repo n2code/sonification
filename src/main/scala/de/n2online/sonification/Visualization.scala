@@ -4,7 +4,6 @@ import javafx.scene.canvas.Canvas
 import javafx.scene.canvas.GraphicsContext
 import javafx.scene.image.Image
 import javafx.scene.paint.Color
-import javafx.scene.shape.StrokeLineCap
 import javafx.scene.transform.Rotate
 
 class Visualization(val gc: GraphicsContext) {
@@ -22,6 +21,7 @@ class Visualization(val gc: GraphicsContext) {
 
   def paint(agent: Agent, route: Route, nodes: Traversable[Node]) {
     val screen: Canvas = gc.getCanvas
+    gc.setLineDashes(0)
 
     //background
     gc.setFill(Color.WHITE)
@@ -53,10 +53,10 @@ class Visualization(val gc: GraphicsContext) {
 
     //agents path
     val path = agent.recorder.getPath
-    (path zip path.tail).foreach{ case (from, to) => {
-      gc.setStroke(Color.DARKBLUE)
-      gc.strokeLine(from.x, from.y, to.x, to.y)
-    }}
+
+    gc.setLineDashes(5.0)
+    gc.setStroke(Color.DARKBLUE)
+    gc.strokePolyline(path.map(_.x).toArray, path.map(_.y).toArray, path.length)
 
     //agent
     drawCenteredImage(character, agent.pos.getX, agent.pos.getY, agent.getOrientation)
