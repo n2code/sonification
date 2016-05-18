@@ -6,7 +6,7 @@ import org.apache.commons.math3.geometry.euclidean.twod.Vector2D
 import org.apache.commons.math3.util.FastMath
 
 object Agent {
-  val maxSpeed: Double = 150
+  final val maxSpeed: Double = 150
 }
 
 class Agent (val posX: Double, val posY: Double, var initialOrientation: Double) {

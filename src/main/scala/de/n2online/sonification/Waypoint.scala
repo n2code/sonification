@@ -2,9 +2,13 @@ package de.n2online.sonification
 
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D
 import org.apache.commons.math3.util.MathUtils
+import javafx.scene.paint.Color
 
 object Waypoint {
   val thresholdReached: Double = 30
+  final val colorVisited = Color.DARKGREEN
+  final val colorNext = Color.ORANGE
+  final val colorLater = Color.DARKRED
 }
 
 class Waypoint (centerNode: Node) {
