@@ -17,7 +17,6 @@ import javafx.scene.layout.AnchorPane
 import javafx.stage.Stage
 import javafx.util.Duration
 
-import de.n2online.sonification.generators.PanningSaws
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D
 
 import scala.util.Random
@@ -96,7 +95,7 @@ class Main extends Application {
 
     //sound!
 
-    val generatorReady = sman.setGenerator(new PanningSaws)
+    val generatorReady = sman.setGenerator(new generators.PanningScale)
 
     //timers
 
@@ -131,7 +130,9 @@ class Main extends Application {
               case Some(target) => {
                 mot.handle(partial, keyboard, agent, route)
                 if (sman.getGenerator.isDefined) {
-                  sman.getGenerator.get.update(target.node.pos.distance(agent.pos))
+                  val dist = target.node.pos.distance(agent.pos)
+                  val angle = target.getAngleCorrection(agent)
+                  sman.getGenerator.get.update(dist, angle)
                 }
                 if (reducedLogSum > 500) {
                   Sonification.log("[NEXT WAYPOINT]" +

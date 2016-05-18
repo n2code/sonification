@@ -4,5 +4,6 @@ import de.sciss.synth._
 
 abstract class Generator {
   def initialize(server: Server)
-  def update(absoluteDistance: Double)
+  def update(absoluteDistance: Double, correctionAngle: Double)
+  def reachedWaypoint()
 }

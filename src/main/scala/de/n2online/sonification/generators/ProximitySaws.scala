@@ -6,7 +6,7 @@ import ugen._
 import Ops._
 import org.apache.commons.math3.util.FastMath
 
-class PanningSaws extends Generator {
+class ProximitySaws extends Generator {
   private var synth = None: Option[Synth]
   private var sawdef = None: Option[SynthDef]
 
@@ -33,11 +33,13 @@ class PanningSaws extends Generator {
     assert(sawdef.isDefined)
   }
 
-  override def update(absoluteDistance: Double): Unit = {
+  override def update(absoluteDistance: Double, dummy: Double): Unit = {
     assertInitialized
 
     val newFactor = FastMath.max(0.0, 400.0-absoluteDistance) / 400
 
     synth.get.set("factor" -> newFactor)
   }
+
+  override def reachedWaypoint(): Unit = { /*NO-OP*/ }
 }
