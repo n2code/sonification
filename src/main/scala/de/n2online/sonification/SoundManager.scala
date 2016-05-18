@@ -24,7 +24,7 @@ class SoundManager {
     serverConnection({
       case ServerConnection.Running(srv) => {
         sync.synchronized { s = srv }
-        println("scsynth booted and connection established.")
+        Sonification.log("scsynth booted and connection established.")
         p.success(srv)
       }
     })

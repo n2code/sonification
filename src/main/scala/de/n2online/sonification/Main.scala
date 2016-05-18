@@ -25,8 +25,15 @@ import scala.util.{Success, Failure}
 import scala.concurrent.ExecutionContext.Implicits.global
 
 object Sonification {
+  var mainref: Main = null
+
   def main(args: Array[String]) {
     Application.launch(classOf[Main], args: _*)
+  }
+
+  def log(text: String): Unit = {
+    if (mainref != null) mainref.log(text)
+    else println(s"=> $text")
   }
 }
 
@@ -56,6 +63,7 @@ class Main extends Application {
     scene = new Scene(root, 800, 600)
     stage.setScene(scene)
     stage.show
+    Sonification.mainref = this
 
     val monitor: AnchorPane = scene.lookup("#monitor").asInstanceOf[AnchorPane]
     screen = scene.lookup("#screen").asInstanceOf[Canvas]
@@ -87,7 +95,7 @@ class Main extends Application {
     randomNodes.foreach { node => {
       route.addWaypoint(new Waypoint(node))
     } }
-    println(s"Random route with ${randomNodes.length} waypoints initialized")
+    Sonification.log(s"Random route with ${randomNodes.length} waypoints initialized")
 
     //sound!
 
@@ -129,12 +137,15 @@ class Main extends Application {
                   sman.getGenerator.get.update(target.node.pos.distance(agent.pos))
                 }
                 if (reducedLogSum > 500) {
-                  println("NEXT UP: distance " + target.node.pos.distance(agent.pos) + ", correction " + Math.toDegrees(target.getAngleCorrection(agent)) + "°")
+                  Sonification.log("[NEXT WAYPOINT]" +
+                    f" Distance ${target.node.pos.distance(agent.pos).toInt}%3s," +
+                    f" Angle ${Math.toDegrees(target.getAngleCorrection(agent)).toInt}%3s°")
                   reducedLogSum = 0
                 }
               }
               case None => {
-                mot.activeAi = false
+                Sonification.log("Finished!")
+                this.stop()
               }
             }
 
@@ -148,11 +159,11 @@ class Main extends Application {
 
     generatorReady.onComplete {
       case Success(benchmark) => {
-        println(s"Sound generator initialized in $benchmark ms")
+        Sonification.log(s"Sound generator initialized in $benchmark ms")
         agent.recorder.start()
         simloop.start()
       }
-      case Failure(ex) => println("Sound init failed")
+      case Failure(ex) => Sonification.log("Sound generator init failed")
     }
   }
 

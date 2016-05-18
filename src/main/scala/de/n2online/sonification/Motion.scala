@@ -27,7 +27,6 @@ class Motion {
           currentTarget.visited = true
         }
       }
-      case None => agent.move(stepFraction)
     }
 
     agent.recorder.update(agent.pos)
