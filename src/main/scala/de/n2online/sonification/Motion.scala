@@ -9,7 +9,9 @@ class Motion {
     if (keyboard.isKeyDown(KeyCode.LEFT)) agent.turn(stepFraction * -agent.maxTurnPerSecond)
     if (keyboard.isKeyDown(KeyCode.RIGHT)) agent.turn(stepFraction * agent.maxTurnPerSecond)
 
-    agent.speed = if (keyboard.isKeyDown(KeyCode.UP)) Agent.maxSpeed else 0
+    agent.speed = 0
+    if (keyboard.isKeyDown(KeyCode.UP)) agent.speed += Agent.maxSpeed
+    if (keyboard.isKeyDown(KeyCode.DOWN)) agent.speed -= Agent.maxSpeed
 
     if (keyboard.isKeyDown(KeyCode.ENTER)) activeAi = true
     if (keyboard.isKeyDown(KeyCode.BACK_SPACE)) activeAi = false
