@@ -18,13 +18,20 @@ object Visualization {
 
 class Visualization(val gc: GraphicsContext) {
 
-  private def drawCenteredImage(image: Image, center_x: Double, center_y: Double, angle: Double) {
+  private def drawCenteredImage(
+                                 image: Image,
+                                 center_x: Double, center_y: Double,
+                                 angle: Double,
+                                 w: Option[Double] = None, h: Option[Double] = None
+                               ) {
     gc.save()
+    val width = w.getOrElse(h.getOrElse(image.getWidth))
+    val height = h.getOrElse(w.getOrElse(image.getHeight))
     val matrix: Rotate = new Rotate(Math.toDegrees(angle), center_x, center_y)
     gc.setTransform(matrix.getMxx, matrix.getMyx, matrix.getMxy, matrix.getMyy, matrix.getTx, matrix.getTy)
-    val x: Double = center_x - image.getWidth / 2
-    val y: Double = center_y - image.getHeight / 2
-    gc.drawImage(image, x, y)
+    val x: Double = center_x - width / 2
+    val y: Double = center_y - height / 2
+    gc.drawImage(image, x, y, width, height)
     gc.restore()
   }
 
@@ -72,6 +79,6 @@ class Visualization(val gc: GraphicsContext) {
     gc.strokePolyline(path.map(_.x).toArray, path.map(_.y).toArray, path.length)
 
     //agent
-    drawCenteredImage(Visualization.character, agent.pos.getX, agent.pos.getY, agent.getOrientation)
+    drawCenteredImage(Visualization.character, agent.pos.getX, agent.pos.getY, agent.getOrientation, Some(30), Some(30))
   }
 }

@@ -11,7 +11,8 @@ class Motion {
 
     agent.speed = if (keyboard.isKeyDown(KeyCode.UP)) Agent.maxSpeed else 0
 
-    if (keyboard.isKeyDown(KeyCode.SPACE)) activeAi = true
+    if (keyboard.isKeyDown(KeyCode.ENTER)) activeAi = true
+    if (keyboard.isKeyDown(KeyCode.BACK_SPACE)) activeAi = false
 
     route.currentWaypoint match {
       case Some(currentTarget) => {
