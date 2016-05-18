@@ -19,7 +19,6 @@ import javafx.util.Duration
 
 import de.n2online.sonification.generators.PanningSaws
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D
-import org.apache.commons.math3.util.FastMath
 
 import scala.util.Random
 import scala.util.{Success, Failure}
@@ -150,6 +149,7 @@ class Main extends Application {
     generatorReady.onComplete {
       case Success(benchmark) => {
         println(s"Sound generator initialized in $benchmark ms")
+        agent.recorder.start()
         simloop.start()
       }
       case Failure(ex) => println("Sound init failed")

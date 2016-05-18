@@ -1,5 +1,7 @@
 package de.n2online.sonification
 
+import java.lang.System.nanoTime
+
 object Helpers {
 
   def wrapToSignedPi(radianAngle: Double): Double =  {
@@ -13,5 +15,8 @@ object Helpers {
     angle
   }
 
+  def systemTimeInMilliseconds: Long = {
+    nanoTime / 1000000
+  }
 }
 

@@ -51,6 +51,13 @@ class Visualization(val gc: GraphicsContext) {
       )
     }
 
+    //agents path
+    val path = agent.recorder.getPath
+    (path zip path.tail).foreach{ case (from, to) => {
+      gc.setStroke(Color.DARKBLUE)
+      gc.strokeLine(from.x, from.y, to.x, to.y)
+    }}
+
     //agent
     drawCenteredImage(character, agent.pos.getX, agent.pos.getY, agent.getOrientation)
   }

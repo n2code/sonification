@@ -1,5 +1,7 @@
 package de.n2online.sonification
 
+import de.n2online.sonification.Helpers._
+
 import de.sciss.synth._
 
 import scala.concurrent.{Future, Promise}
@@ -36,14 +38,14 @@ class SoundManager {
 
   def execute(collidercode: Server => Unit, successMsg: Option[String] = None): Future[Long] = {
     val p = Promise[Long]()
-    val start = System.nanoTime()
+    val start = systemTimeInMilliseconds
     server.onComplete {
       case Success(srv) => {
         sync.synchronized {
           collidercode(srv)
         }
         println(successMsg getOrElse "sc-code executed.")
-        p.success((System.nanoTime() - start) / 1000000)
+        p.success(systemTimeInMilliseconds - start)
       }
       case Failure(ex) => println("Could not execute, server future failed")
     }

@@ -1,9 +1,9 @@
 package de.n2online.sonification
 
-import scala.collection.mutable.MutableList
+import scala.collection.mutable
 
 class Route {
-  private var waypoints: MutableList[Waypoint] = new MutableList[Waypoint]
+  private var waypoints: mutable.MutableList[Waypoint] = new mutable.MutableList[Waypoint]
 
   def addWaypoint(waypoint: Waypoint) {
     waypoints += waypoint
