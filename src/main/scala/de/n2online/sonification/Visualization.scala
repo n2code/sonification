@@ -54,10 +54,11 @@ class Visualization(val gc: GraphicsContext) {
         Visualization.meshNodeRadius*2, Visualization.meshNodeRadius*2)
 
     //waypoints
-    for (waypoint <- route.getWaypoints) {
+    for (waypoint <- route.waypoints) {
       val color =
         if (waypoint.visited) Waypoint.colorVisited
-        else if (waypoint == route.currentWaypoint.orNull) Waypoint.colorNext
+        else if (waypoint == route.currentWaypoint.orNull) Waypoint.colorCurrent
+        else if (waypoint == route.nextWaypoint.orNull) Waypoint.colorNext
         else Waypoint.colorLater
       gc.setFill(color)
       val diameter =

@@ -89,12 +89,9 @@ class Main extends Application {
 
     agent = new Agent(32, 32, Math.toRadians(45))
 
-    route = new Route
     val mesh = MeshBuilder.getRandomMesh(new Vector2D(0,0), screen.getWidth, screen.getHeight)
     val randomNodes = Random.shuffle(mesh.indices.toList).take(mesh.length/3).map(mesh(_))
-    randomNodes.foreach { node => {
-      route.addWaypoint(new Waypoint(node))
-    } }
+    route = new Route(randomNodes.map(new Waypoint(_)))
     Sonification.log(s"Random route with ${randomNodes.length} waypoints initialized")
 
     //sound!

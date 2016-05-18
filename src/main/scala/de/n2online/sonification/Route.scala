@@ -1,17 +1,12 @@
 package de.n2online.sonification
 
-import scala.collection.mutable
+class Route(wpoints: List[Waypoint]) {
+  val waypoints = wpoints
 
-class Route {
-  private var waypoints: mutable.MutableList[Waypoint] = new mutable.MutableList[Waypoint]
+  def splitByVisited = waypoints.span(_.visited)
+  def visited = splitByVisited._1
+  def remaining = splitByVisited._2
 
-  def addWaypoint(waypoint: Waypoint) {
-    waypoints += waypoint
-  }
-
-  def getWaypoints = waypoints
-
-  def currentWaypoint: Option[Waypoint] = {
-    waypoints.find(_.visited == false)
-  }
+  def currentWaypoint = remaining.headOption
+  def nextWaypoint = remaining.tail.headOption
 }
