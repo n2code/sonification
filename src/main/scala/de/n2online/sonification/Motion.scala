@@ -3,7 +3,7 @@ package de.n2online.sonification
 import javafx.scene.input.KeyCode
 
 class Motion {
-  private var activeAi: Boolean = false
+  var activeAi: Boolean = false
 
   def handle(stepFraction: Double, keyboard: Keyboard, agent: Agent, route: Route) {
     if (keyboard.isKeyDown(KeyCode.LEFT)) agent.turn(stepFraction * -agent.maxTurnPerSecond)

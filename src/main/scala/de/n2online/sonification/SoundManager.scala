@@ -7,34 +7,41 @@ import scala.util.{Success, Failure}
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class SoundManager {
+  private var generator = None: Option[Generator]
+  private val sync = new AnyRef
 
+  //boot process
   private val cfg = Server.Config()
   cfg.program = "/usr/bin/scsynth"
   cfg.deviceName = Some("Sonification")
+  cfg.outputBusChannels = 2
   private val serverConnection = Server.boot(config = cfg) _
-
-  private val sync = new AnyRef
-  var s: Server = null
-
-  private var generator = None: Option[Generator]
-
+  private var s: Server = null
   val server: Future[Server] = {
     val p = Promise[Server]()
     serverConnection({
       case ServerConnection.Running(srv) => {
         sync.synchronized { s = srv }
+        println("scsynth booted and connection established.")
         p.success(srv)
       }
     })
     p.future
   }
 
+  def stopServer() = {
+    if (s.condition != Server.Offline) s.quit()
+  }
+
+
   def execute(collidercode: Server => Unit, successMsg: Option[String] = None): Future[Long] = {
     val p = Promise[Long]()
     val start = System.nanoTime()
     server.onComplete {
       case Success(srv) => {
-        collidercode(srv)
+        sync.synchronized {
+          collidercode(srv)
+        }
         println(successMsg getOrElse "sc-code executed.")
         p.success((System.nanoTime() - start) / 1000000)
       }

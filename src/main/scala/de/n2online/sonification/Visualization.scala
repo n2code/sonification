@@ -24,11 +24,11 @@ class Visualization(val gc: GraphicsContext) {
     val screen: Canvas = gc.getCanvas
 
     //background
-    gc.setFill(Color.GREY)
+    gc.setFill(Color.WHITE)
     gc.fillRect(0, 0, screen.getWidth, screen.getHeight)
 
     //node mesh
-    gc.setStroke(Color.DARKGRAY)
+    gc.setStroke(Color.GRAY)
     for (node <- nodes)
       for (edge <- node.edges)
         gc.strokeLine(edge.from.pos.getX, edge.from.pos.getY, edge.to.pos.getX, edge.to.pos.getY)
@@ -40,7 +40,7 @@ class Visualization(val gc: GraphicsContext) {
     for (waypoint <- route.getWaypoints) {
       val color =
         if (waypoint.visited) Color.DARKGREEN
-        else if (waypoint == route.currentWaypoint.orNull) Color.YELLOW
+        else if (waypoint == route.currentWaypoint.orNull) Color.ORANGE
         else Color.DARKRED
       gc.setFill(color)
       gc.fillOval(

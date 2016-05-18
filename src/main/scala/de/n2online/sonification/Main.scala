@@ -45,6 +45,7 @@ class Main extends Application {
   var route: Route = null
 
   override def stop(): Unit = {
+    sman.stopServer()
   }
 
   @throws[Exception]
@@ -134,8 +135,7 @@ class Main extends Application {
                 }
               }
               case None => {
-                route.addWaypoint(new Waypoint(new Node(FastMath.random * screen.getWidth, FastMath.random * screen.getHeight)))
-                println("Added new waypoint.")
+                mot.activeAi = false
               }
             }
 
