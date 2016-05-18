@@ -83,7 +83,6 @@ class Main extends Application {
 
     route = new Route
     val mesh = MeshBuilder.getRandomMesh(new Vector2D(0,0), screen.getWidth, screen.getHeight)
-    println(mesh)
     val randomNodes = Random.shuffle(mesh.indices.toList).take(mesh.length/3).map(mesh(_))
     randomNodes.foreach { node => {
       route.addWaypoint(new Waypoint(node))
@@ -92,7 +91,7 @@ class Main extends Application {
 
     //sound!
 
-    sman.setGenerator(new PanningSaws)
+    val generatorReady = sman.setGenerator(new PanningSaws)
 
     //timers
 
@@ -147,13 +146,13 @@ class Main extends Application {
         last = now
       }
     }
-    val booted = sman.isReady()
-    booted.onComplete {
-      case Success(true) => {
-        println("Booting future complete")
+
+    generatorReady.onComplete {
+      case Success(benchmark) => {
+        println(s"Sound generator initialized in $benchmark ms")
         simloop.start()
       }
-      case Failure(ex) => println("Booting failed")
+      case Failure(ex) => println("Sound init failed")
     }
   }
 
