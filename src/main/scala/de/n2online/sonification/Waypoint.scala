@@ -16,6 +16,16 @@ class Waypoint (centerNode: Node) {
   val node = centerNode
   var visited: Boolean = false
 
+  var statStraightDistance: Option[Double] = None
+  var statUserDistance: Option[Double] = None
+  var statUserTimeMilliseconds: Option[Long] = None
+
+  override def equals(that: Any): Boolean = that match {
+    case that: Waypoint => that.node.equals(this.node)
+    case _ => false
+  }
+  override def hashCode = node.hashCode()
+
   def isReached(compare: Vector2D): Boolean = compare.distance(node.pos) <= Waypoint.thresholdReached
 
   def getAngleCorrection(agent: Agent): Double = {

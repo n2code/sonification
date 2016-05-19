@@ -16,6 +16,8 @@ class Motion {
     if (keyboard.isKeyDown(KeyCode.ENTER)) activeAi = true
     if (keyboard.isKeyDown(KeyCode.BACK_SPACE)) activeAi = false
 
+    var reached: Option[Waypoint] = None
+
     route.currentWaypoint match {
       case Some(currentTarget) => {
         if (activeAi) {
@@ -27,10 +29,11 @@ class Motion {
         agent.move(stepFraction)
         if (currentTarget.isReached(agent.pos)) {
           currentTarget.visited = true
+          reached = Some(currentTarget)
         }
       }
     }
 
-    agent.recorder.update(agent.pos)
+    agent.recorder.update(agent.pos, reached)
   }
 }

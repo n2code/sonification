@@ -135,9 +135,9 @@ class Main extends Application {
                   sman.getGenerator.get.update(dist, angle)
                 }
                 if (reducedLogSum > 500) {
-                  Sonification.log("[NEXT WAYPOINT]" +
-                    f" Distance ${target.node.pos.distance(agent.pos).toInt}%3s," +
-                    f" Angle ${Math.toDegrees(target.getAngleCorrection(agent)).toInt}%3s°")
+                  Sonification.log("[TARGET]" +
+                    f" distance ${target.node.pos.distance(agent.pos).toInt}%3s," +
+                    f" angle ${Math.toDegrees(target.getAngleCorrection(agent)).toInt}%3s°")
                   reducedLogSum = 0
                 }
               }
@@ -158,7 +158,7 @@ class Main extends Application {
     generatorReady.onComplete {
       case Success(benchmark) => {
         Sonification.log(s"Sound generator initialized in $benchmark ms")
-        agent.recorder.start()
+        agent.recorder.start(agent.pos)
         simloop.start()
       }
       case Failure(ex) => Sonification.log("Sound generator init failed")

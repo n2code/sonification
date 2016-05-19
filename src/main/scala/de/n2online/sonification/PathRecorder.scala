@@ -8,8 +8,12 @@ import scala.collection.mutable
 class PathRecorder {
   private var path: mutable.MutableList[TimedPosition] = null
   private var active = false
-  private var started: Long = 0
-  private var updated: Long = 0
+  private var playing = false
+  private var tUpdated: Long = 0
+  private var tWaypointTackled: Long = 0
+  private var posTargetAcquired = Vector2D.NaN
+  private var posPrevious = Vector2D.NaN
+  private var accDistance: Double = 0
   reset()
 
   def reset() = {
@@ -17,24 +21,58 @@ class PathRecorder {
     path = new mutable.MutableList[TimedPosition]
   }
 
-  def start() = {
-    started = systemTimeInMilliseconds
-    updated = started
+  def start(pos: Vector2D) = {
+    initNewTarget(pos, systemTimeInMilliseconds)
     active = true
+    play()
+  }
+
+  def play() = {
+    assert(active, "Playing path recorder which is not active")
+    tUpdated = systemTimeInMilliseconds
+    playing = true
     this
   }
 
-  def update(pos: Vector2D) = {
-    assert(active, "Updating path recorder which is not running")
-    val now = systemTimeInMilliseconds
-    val delta = now - updated
-    path += TimedPosition(pos.getX, pos.getY, delta)
-    updated = now
+  def update(posCurrent: Vector2D, reachedWaypoint: Option[Waypoint]) = {
+    assert(active && playing, "Updating path recorder which is not active&&playing")
+
+    val tNow = systemTimeInMilliseconds
+    val tDelta = tNow - tUpdated
+    tUpdated = tNow
+
+    accDistance += posCurrent.distance(posPrevious)
+    posPrevious = posCurrent
+
+    path += TimedPosition(posCurrent.getX, posCurrent.getY, tDelta, reachedWaypoint)
+
+    reachedWaypoint match{
+      case Some(waypoint) => {
+        //calculate stats
+        waypoint.statUserTimeMilliseconds = Some(tNow - tWaypointTackled)
+        waypoint.statStraightDistance = Some(posCurrent.distance(posTargetAcquired))
+        waypoint.statUserDistance = Some(accDistance)
+        val perfectTime = (waypoint.statStraightDistance.get / Agent.maxSpeed).toInt
+        Sonification.log(s"[REACHED] time ${waypoint.statUserTimeMilliseconds.get/1000}sec (${perfectTime}sec optimum)" +
+          s", distance ${waypoint.statUserDistance.get.toInt} (${waypoint.statStraightDistance.get.toInt} optimum)")
+
+        //reset counters
+        initNewTarget(posCurrent, tNow)
+      }
+      case None =>
+    }
+
   }
 
-  def play = start()
+  private def initNewTarget(currentPos: Vector2D, tNow: Long) = {
+    tWaypointTackled = tNow
+    posTargetAcquired = currentPos
+    posPrevious = currentPos
+    accDistance = 0
+  }
+
   def pause() = {
-    active = false
+    playing = false
   }
 
   def getPath = {
