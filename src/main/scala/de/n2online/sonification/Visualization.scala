@@ -35,7 +35,7 @@ class Visualization(val gc: GraphicsContext) {
     gc.restore()
   }
 
-  def paint(agent: Agent, route: Route, nodes: Traversable[Node]) {
+  def paint(agent: Agent, route: Route, mesh: Graph) {
     val screen: Canvas = gc.getCanvas
     gc.setLineDashes(0)
 
@@ -45,12 +45,11 @@ class Visualization(val gc: GraphicsContext) {
 
     //node mesh
     gc.setStroke(Visualization.meshEdgeColor)
-    for (node <- nodes)
-      for (edge <- node.edges)
-        gc.strokeLine(edge.from.pos.getX, edge.from.pos.getY, edge.to.pos.getX, edge.to.pos.getY)
+    for (edge <- mesh.edges)
+      gc.strokeLine(edge.from.x, edge.from.y, edge.to.x, edge.to.y)
     gc.setFill(Visualization.meshNodeColor)
-    for (node <- nodes)
-      gc.fillOval(node.pos.getX - Visualization.meshNodeRadius, node.pos.getY - Visualization.meshNodeRadius,
+    for (node <- mesh.nodes)
+      gc.fillOval(node.x - Visualization.meshNodeRadius, node.y - Visualization.meshNodeRadius,
         Visualization.meshNodeRadius*2, Visualization.meshNodeRadius*2)
 
     //waypoints

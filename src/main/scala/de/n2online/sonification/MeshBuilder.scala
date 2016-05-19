@@ -11,7 +11,7 @@ object MeshBuilder {
                     width: Double, height: Double,
                     cellNumX: Option[Int] = None, cellNumY: Option[Int] = None,
                     seed: Int = Random.nextInt()
-                   ): List[Node] = {
+                   ): Graph = {
     //settings
     val defaultCellSize = 100 //used if no number of cells per dimension is given
     val centerVariance = 0.3 //center varied by 30% of the cells width and height
@@ -31,34 +31,28 @@ object MeshBuilder {
     val cellWidth = width / cellsX
     val cellHeight = width / cellsY
 
-    //populate with Nodes
-    val cells = List.tabulate[Cell](cellsX, cellsY) { (x, y) => {
+    //generate nodes
+    val nodes: Set[Node] = List.tabulate[Option[Node]](cellsX, cellsY) { (x, y) => {
       //calculate cell center with random variance of both dimensions by centerVariance
       val nodeX = topleft.getX + (x + 0.5 + randomVariance)*cellWidth
       val nodeY = topleft.getY + (y + 0.5 + randomVariance)*cellHeight
 
-      Cell(
-        x, y,
-        cellWidth, cellHeight,
-        if (rnd.nextDouble()<pCellEmpty) None else Some(new Node(nodeX, nodeY))
-      )
-    }}.flatten //we now got all cells - empty or not
+      if (rnd.nextDouble()<pCellEmpty) None else Some(Node(nodeX, nodeY, Cell(x, y, cellWidth, cellHeight)))
+    }}.flatten.flatten.toSet //we now got all nodes
 
-    //connect [existing] nodes of adjacent cells
-    cells.filter(_.node.isDefined).foreach(cell => {
-      //find valid targets and calculate edges to them
-      val targets = for (validTarget <- cells.filter(target =>
-        (cell.x-1 to cell.x+1).contains(target.x) //neighbourhood constraint X
-        && (cell.y-1 to cell.y+1).contains(target.y) //neighbourhood constraint Y
-        && target.node.isDefined //node exists
-        && (cell.x, cell.y) != (target.x, target.y) //...and no reflexive edge relation please :)
-      )) yield Edge(cell.node.get, validTarget.node.get)
-
-      //and finally do what we came for: update the current cells edges
-      cell.node.get.edges = targets.toSet
+    val edges: Set[Edge] = nodes.flatMap(from => {
+      //connect nodes of adjacent cells
+      val targets = nodes.filter { to =>
+        (
+             (from.cell.x - 1 to from.cell.x + 1).contains(to.cell.x) //neighbourhood constraint X
+          && (from.cell.y - 1 to from.cell.y + 1).contains(to.cell.y) //neighbourhood constraint Y
+          && (from.cell.x, from.cell.y) !=(to.cell.x, to.cell.y) //...and no reflexive edge relation please :)
+        )
+      }
+      targets.map(Edge(from, _))
     })
 
-    cells.flatMap(_.node)
+    new Graph(nodes, edges)
   }
 
 }

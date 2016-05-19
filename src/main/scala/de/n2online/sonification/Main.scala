@@ -89,7 +89,8 @@ class Main extends Application {
     agent = new Agent(32, 32, Math.toRadians(45))
 
     val mesh = MeshBuilder.getRandomMesh(new Vector2D(0,0), screen.getWidth, screen.getHeight)
-    val randomNodes = Random.shuffle(mesh.indices.toList).take(mesh.length/3).map(mesh(_))
+    val nodeList = mesh.nodes.toList
+    val randomNodes = Random.shuffle(nodeList.indices.toList).take(nodeList.length/3).map(nodeList(_))
     route = new Route(randomNodes.map(new Waypoint(_)))
     Sonification.log(s"Random route with ${randomNodes.length} waypoints initialized")
 
@@ -106,7 +107,7 @@ class Main extends Application {
 
     val timeline: Timeline = new Timeline(keyframe)
     timeline.setCycleCount(Animation.INDEFINITE)
-    timeline.play
+    timeline.play()
 
     //calculation (sim & sound) :
     val simloop = new AnimationTimer() {
