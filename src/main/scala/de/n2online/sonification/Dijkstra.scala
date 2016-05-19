@@ -1,7 +1,7 @@
 package de.n2online.sonification
 
 object Dijkstra {
-  def shortestPath(start: Node, target: Node, graph: Graph): Iterable[Node] = {
+  def shortestPath(start: Node, target: Node, graph: Graph): List[Node] = {
 
     //preparation and helpers
 
