@@ -11,6 +11,7 @@ object Visualization {
   private final val meshNodeColor = Color.GREY
   private final val meshEdgeColor = Color.LIGHTGREY
   private final val backgroundColor = Color.WHITE
+  private final val agentDiameter = 30
   private final val agentPathDashes = 5.0
   private final val agentPathColor = Color.DARKBLUE
   private final val character = new Image(getClass.getResourceAsStream("/agent.png"))
@@ -90,6 +91,7 @@ class Visualization(val gc: GraphicsContext,
     gc.strokePolyline(path.map(p => X(p.x)).toArray, path.map(p => Y(p.y)).toArray, path.length)
 
     //agent
-    drawCenteredImage(Visualization.character, X(agent.pos.getX), Y(agent.pos.getY), agent.getOrientation, Some(30), Some(30))
+    val propScaledAgent = Visualization.agentDiameter * math.min(scaleX, scaleY)
+    drawCenteredImage(Visualization.character, X(agent.pos.getX), Y(agent.pos.getY), agent.getOrientation, Some(propScaledAgent), Some(propScaledAgent))
   }
 }
