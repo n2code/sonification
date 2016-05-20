@@ -94,7 +94,7 @@ class Main extends Application {
       (l, next) => l ++ Dijkstra.shortestPath(l.last, next, mesh).tail
     }
 
-    route = new Route(randomRoute.map(new Waypoint(_)))
+    route = new Route(randomRoute.tail.map(new Waypoint(_)))
     Sonification.log(s"Random route with ${randomNodes.length} waypoints initialized")
 
     agent = new Agent(randomRoute.head.x, randomRoute.head.y, Math.toRadians(45))
