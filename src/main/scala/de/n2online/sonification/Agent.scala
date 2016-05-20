@@ -9,7 +9,7 @@ object Agent {
   final val maxSpeed: Double = 20
 }
 
-class Agent (val posX: Double, val posY: Double, var initialOrientation: Double) {
+class Agent (posX: Double, posY: Double, initialOrientation: Double) {
   var pos: Vector2D = new Vector2D(posX, posY)
   var speed: Double = 0
   val maxTurnPerSecond: Double = Math.toRadians(90)

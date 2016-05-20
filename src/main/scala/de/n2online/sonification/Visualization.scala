@@ -14,13 +14,15 @@ object Visualization {
   private final val agentDiameter = 30
   private final val agentPathDashes = 5.0
   private final val agentPathColor = Color.DARKBLUE
+  private final val agentZoomSquareSize = 200
   private final val character = new Image(getClass.getResourceAsStream("/agent.png"))
 }
 
 class Visualization(val gc: GraphicsContext,
                     val meshWidth: Double, val meshHeight: Double) {
   var viewport = Rectangle(meshWidth, meshHeight)
-  var scaleProportional = true
+  final val scaleProportional = true
+  var zoomInOnAgent = false
 
   private def drawCenteredImage(
                                  image: Image,
@@ -42,13 +44,27 @@ class Visualization(val gc: GraphicsContext,
   def paint(agent: Agent, route: Route, mesh: Graph) {
     val screen: Canvas = gc.getCanvas
 
+    //fancy view modifiers
+
+    if (zoomInOnAgent) {
+      viewport = Rectangle(Visualization.agentZoomSquareSize, Visualization.agentZoomSquareSize,
+        agent.pos.getX - Visualization.agentZoomSquareSize/2, agent.pos.getY - Visualization.agentZoomSquareSize/2)
+    }
+
     //adjustment functions
-    val rawScaleX = gc.getCanvas.getWidth  / viewport.width
-    val rawScaleY = gc.getCanvas.getHeight / viewport.height
+
+    //stretching scale
+    val rawScaleX = screen.getWidth  / viewport.width
+    val rawScaleY = screen.getHeight / viewport.height
+    //scale proportional if asked for
     val scaleX = if (scaleProportional) math.min(rawScaleX, rawScaleY) else rawScaleX
     val scaleY = if (scaleProportional) math.min(rawScaleX, rawScaleY) else rawScaleY
-    val X = (x: Double) => (x - viewport.x) * scaleX
-    val Y = (y: Double) => (y - viewport.y) * scaleY
+    //center viewport
+    val centerAdjustX = screen.getWidth/2 - viewport.width*scaleX/2
+    val centerAdjustY = screen.getHeight/2 - viewport.height*scaleY/2
+    //how to calculate projected coordinates on canvas
+    val X = (x: Double) => (x - viewport.x) * scaleX + centerAdjustX
+    val Y = (y: Double) => (y - viewport.y) * scaleY + centerAdjustY
 
     //background
     gc.setFill(Visualization.backgroundColor)
