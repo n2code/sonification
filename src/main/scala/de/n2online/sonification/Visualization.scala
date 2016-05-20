@@ -16,7 +16,9 @@ object Visualization {
   private final val character = new Image(getClass.getResourceAsStream("/agent.png"))
 }
 
-class Visualization(val gc: GraphicsContext) {
+class Visualization(val gc: GraphicsContext,
+                    val meshWidth: Double, val meshHeight: Double) {
+  var viewport = Rectangle(meshWidth, meshHeight)
 
   private def drawCenteredImage(
                                  image: Image,
@@ -38,6 +40,12 @@ class Visualization(val gc: GraphicsContext) {
   def paint(agent: Agent, route: Route, mesh: Graph) {
     val screen: Canvas = gc.getCanvas
 
+    //adjustment functions
+    val scaleX = gc.getCanvas.getWidth  / viewport.width
+    val scaleY = gc.getCanvas.getHeight / viewport.height
+    val X = (x: Double) => (x - viewport.x) * scaleX
+    val Y = (y: Double) => (y - viewport.y) * scaleY
+
     //background
     gc.setFill(Visualization.backgroundColor)
     gc.fillRect(0, 0, screen.getWidth, screen.getHeight)
@@ -46,11 +54,11 @@ class Visualization(val gc: GraphicsContext) {
     gc.setLineDashes(0)
     gc.setStroke(Visualization.meshEdgeColor)
     for (edge <- mesh.edges)
-      gc.strokeLine(edge.from.x, edge.from.y, edge.to.x, edge.to.y)
+      gc.strokeLine(X(edge.from.x), Y(edge.from.y), X(edge.to.x), Y(edge.to.y))
     gc.setFill(Visualization.meshNodeColor)
     for (node <- mesh.nodes)
-      gc.fillOval(node.x - Visualization.meshNodeRadius, node.y - Visualization.meshNodeRadius,
-        Visualization.meshNodeRadius*2, Visualization.meshNodeRadius*2)
+      gc.fillOval(X(node.x - Visualization.meshNodeRadius), Y(node.y - Visualization.meshNodeRadius),
+        Visualization.meshNodeRadius*2*scaleX, Visualization.meshNodeRadius*2*scaleY)
 
     //waypoints
     for (waypoint <- route.waypoints) {
@@ -64,10 +72,10 @@ class Visualization(val gc: GraphicsContext) {
         if (waypoint == route.currentWaypoint.orNull) Waypoint.thresholdReached
         else Visualization.meshNodeRadius*2
       gc.fillOval(
-        waypoint.node.pos.getX - diameter / 2,
-        waypoint.node.pos.getY - diameter / 2,
-        diameter,
-        diameter
+        X(waypoint.node.pos.getX - diameter / 2),
+        Y(waypoint.node.pos.getY - diameter / 2),
+        diameter*scaleX,
+        diameter*scaleY
       )
     }
 
@@ -76,9 +84,9 @@ class Visualization(val gc: GraphicsContext) {
 
     gc.setLineDashes(Visualization.agentPathDashes)
     gc.setStroke(Visualization.agentPathColor)
-    gc.strokePolyline(path.map(_.x).toArray, path.map(_.y).toArray, path.length)
+    gc.strokePolyline(path.map(p => X(p.x)).toArray, path.map(p => Y(p.y)).toArray, path.length)
 
     //agent
-    drawCenteredImage(Visualization.character, agent.pos.getX, agent.pos.getY, agent.getOrientation, Some(30), Some(30))
+    drawCenteredImage(Visualization.character, X(agent.pos.getX), Y(agent.pos.getY), agent.getOrientation, Some(30*scaleX), Some(30*scaleY))
   }
 }

@@ -69,7 +69,6 @@ class Main extends Application {
     screen.widthProperty.bind(monitor.widthProperty)
     screen.heightProperty.bind(monitor.heightProperty)
     gc = screen.getGraphicsContext2D
-    viz = new Visualization(gc)
 
     //handling movement and input
 
@@ -85,7 +84,8 @@ class Main extends Application {
 
     //world data
 
-    val mesh = MeshBuilder.getRandomMesh(new Vector2D(0,0), monitor.getWidth, monitor.getHeight)
+    val meshSize = Rectangle(1000, 750)
+    val mesh = MeshBuilder.getRandomMesh(new Vector2D(0,0), meshSize.width, meshSize.height)
     val landmarks = mesh.nodes.toList
     assert(landmarks.length >= 2, "at least two nodes for route required!")
 
@@ -98,6 +98,9 @@ class Main extends Application {
     Sonification.log(s"Random route with ${randomNodes.length} waypoints initialized")
 
     agent = new Agent(randomRoute.head.x, randomRoute.head.y, Math.toRadians(45))
+
+    viz = new Visualization(gc, monitor.getWidth, monitor.getHeight)
+    viz.viewport = Rectangle(meshSize.width, meshSize.height, 0, 0)
 
     //sound!
 
