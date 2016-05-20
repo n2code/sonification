@@ -89,13 +89,13 @@ class Main extends Application {
     val landmarks = mesh.nodes.toList
     assert(landmarks.length >= 2, "at least two nodes for route required!")
 
-    val randomNodes = Random.shuffle(landmarks.indices.toList).take(5).map(landmarks(_))
+    val randomNodes = Random.shuffle(landmarks.indices.toList).take(3).map(landmarks(_))
     val randomRoute = randomNodes.tail.foldLeft(List(randomNodes.head)){
       (l, next) => l ++ Dijkstra.shortestPath(l.last, next, mesh).tail
     }
 
     route = new Route(randomRoute.tail.map(new Waypoint(_)))
-    Sonification.log(s"Random route with ${randomNodes.length} waypoints initialized")
+    Sonification.log(s"Random route with ${route.waypoints.length} waypoints initialized")
 
     agent = new Agent(randomRoute.head.x, randomRoute.head.y, Math.toRadians(45))
 
