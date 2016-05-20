@@ -19,6 +19,7 @@ object Visualization {
 class Visualization(val gc: GraphicsContext,
                     val meshWidth: Double, val meshHeight: Double) {
   var viewport = Rectangle(meshWidth, meshHeight)
+  var scaleProportional = true
 
   private def drawCenteredImage(
                                  image: Image,
@@ -41,8 +42,10 @@ class Visualization(val gc: GraphicsContext,
     val screen: Canvas = gc.getCanvas
 
     //adjustment functions
-    val scaleX = gc.getCanvas.getWidth  / viewport.width
-    val scaleY = gc.getCanvas.getHeight / viewport.height
+    val rawScaleX = gc.getCanvas.getWidth  / viewport.width
+    val rawScaleY = gc.getCanvas.getHeight / viewport.height
+    val scaleX = if (scaleProportional) math.min(rawScaleX, rawScaleY) else rawScaleX
+    val scaleY = if (scaleProportional) math.min(rawScaleX, rawScaleY) else rawScaleY
     val X = (x: Double) => (x - viewport.x) * scaleX
     val Y = (y: Double) => (y - viewport.y) * scaleY
 
@@ -87,6 +90,6 @@ class Visualization(val gc: GraphicsContext,
     gc.strokePolyline(path.map(p => X(p.x)).toArray, path.map(p => Y(p.y)).toArray, path.length)
 
     //agent
-    drawCenteredImage(Visualization.character, X(agent.pos.getX), Y(agent.pos.getY), agent.getOrientation, Some(30*scaleX), Some(30*scaleY))
+    drawCenteredImage(Visualization.character, X(agent.pos.getX), Y(agent.pos.getY), agent.getOrientation, Some(30), Some(30))
   }
 }

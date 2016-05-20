@@ -28,8 +28,8 @@ object MeshBuilder {
     val cellsX: Int = cellNumX.getOrElse((width/defaultCellSize).floor.toInt)
     val cellsY: Int = cellNumY.getOrElse((height/defaultCellSize).floor.toInt)
 
-    val cellWidth = width / cellsX
-    val cellHeight = width / cellsY
+    val cellWidth  = width  / cellsX
+    val cellHeight = height / cellsY
 
     //generate nodes
     val nodes: Set[Node] = List.tabulate[Option[Node]](cellsX, cellsY) { (x, y) => {
