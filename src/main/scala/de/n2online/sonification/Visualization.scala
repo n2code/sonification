@@ -40,7 +40,7 @@ class Visualization(val gc: GraphicsContext) {
 
     //background
     gc.setFill(Visualization.backgroundColor)
-    gc.fillRect(10, 10, screen.getWidth-20, screen.getHeight-20)
+    gc.fillRect(0, 0, screen.getWidth, screen.getHeight)
 
     //node mesh
     gc.setLineDashes(0)

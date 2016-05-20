@@ -13,14 +13,14 @@ import javafx.scene.canvas.Canvas
 import javafx.scene.canvas.GraphicsContext
 import javafx.scene.control.TextArea
 import javafx.scene.input.KeyEvent
-import javafx.scene.layout.AnchorPane
+import javafx.scene.layout.Pane
 import javafx.stage.Stage
 import javafx.util.Duration
 
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D
 
 import scala.util.Random
-import scala.util.{Success, Failure}
+import scala.util.{Failure, Success}
 import scala.concurrent.ExecutionContext.Implicits.global
 
 object Sonification {
@@ -64,7 +64,7 @@ class Main extends Application {
     stage.show
     Sonification.mainref = this
 
-    val monitor: AnchorPane = scene.lookup("#monitor").asInstanceOf[AnchorPane]
+    val monitor: Pane = scene.lookup("#monitor").asInstanceOf[Pane]
     screen = scene.lookup("#screen").asInstanceOf[Canvas]
     screen.widthProperty.bind(monitor.widthProperty)
     screen.heightProperty.bind(monitor.heightProperty)
@@ -85,7 +85,7 @@ class Main extends Application {
 
     //world data
 
-    val mesh = MeshBuilder.getRandomMesh(new Vector2D(0,0), screen.getWidth, screen.getHeight)
+    val mesh = MeshBuilder.getRandomMesh(new Vector2D(0,0), monitor.getWidth, monitor.getHeight)
     val landmarks = mesh.nodes.toList
     assert(landmarks.length >= 2, "at least two nodes for route required!")
 
