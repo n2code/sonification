@@ -68,7 +68,6 @@ class Main extends Application {
     screen = scene.lookup("#screen").asInstanceOf[Canvas]
     screen.widthProperty.bind(monitor.widthProperty)
     screen.heightProperty.bind(monitor.heightProperty)
-
     gc = screen.getGraphicsContext2D
     viz = new Visualization(gc)
 

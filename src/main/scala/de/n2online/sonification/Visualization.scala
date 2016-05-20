@@ -37,13 +37,13 @@ class Visualization(val gc: GraphicsContext) {
 
   def paint(agent: Agent, route: Route, mesh: Graph) {
     val screen: Canvas = gc.getCanvas
-    gc.setLineDashes(0)
 
     //background
     gc.setFill(Visualization.backgroundColor)
-    gc.fillRect(0, 0, screen.getWidth, screen.getHeight)
+    gc.fillRect(10, 10, screen.getWidth-20, screen.getHeight-20)
 
     //node mesh
+    gc.setLineDashes(0)
     gc.setStroke(Visualization.meshEdgeColor)
     for (edge <- mesh.edges)
       gc.strokeLine(edge.from.x, edge.from.y, edge.to.x, edge.to.y)
