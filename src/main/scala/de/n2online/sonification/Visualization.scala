@@ -22,7 +22,8 @@ class Visualization(val gc: GraphicsContext,
                     val meshWidth: Double, val meshHeight: Double) {
   var viewport = Rectangle(meshWidth, meshHeight)
   final val scaleProportional = true
-  var zoomInOnAgent = false
+  var zoomInOnAgent = true
+  var rotateWithAgent = true
 
   private def drawCenteredImage(
                                  image: Image,
@@ -44,14 +45,14 @@ class Visualization(val gc: GraphicsContext,
   def paint(agent: Agent, route: Route, mesh: Graph) {
     val screen: Canvas = gc.getCanvas
 
-    //fancy view modifiers
+    /***** fancy view modifiers *****/
 
     if (zoomInOnAgent) {
       viewport = Rectangle(Visualization.agentZoomSquareSize, Visualization.agentZoomSquareSize,
         agent.pos.getX - Visualization.agentZoomSquareSize/2, agent.pos.getY - Visualization.agentZoomSquareSize/2)
     }
 
-    //adjustment functions
+    /***** adjustment functions *****/
 
     //stretching scale
     val rawScaleX = screen.getWidth  / viewport.width
@@ -66,9 +67,19 @@ class Visualization(val gc: GraphicsContext,
     val X = (x: Double) => (x - viewport.x) * scaleX + centerAdjustX
     val Y = (y: Double) => (y - viewport.y) * scaleY + centerAdjustY
 
+    /***** DRAWING ****/
+
     //background
     gc.setFill(Visualization.backgroundColor)
     gc.fillRect(0, 0, screen.getWidth, screen.getHeight)
+
+    //agent view
+    if (rotateWithAgent) {
+      gc.save()
+      val matrix: Rotate = new Rotate(Math.toDegrees(-agent.getOrientation-math.Pi/2), screen.getWidth/2, screen.getHeight/2)
+      gc.setTransform(matrix.getMxx, matrix.getMyx, matrix.getMxy, matrix.getMyy, matrix.getTx, matrix.getTy)
+      //restored later
+    }
 
     //node mesh
     gc.setLineDashes(0)
@@ -108,6 +119,14 @@ class Visualization(val gc: GraphicsContext,
 
     //agent
     val propScaledAgent = Visualization.agentDiameter * math.min(scaleX, scaleY)
-    drawCenteredImage(Visualization.character, X(agent.pos.getX), Y(agent.pos.getY), agent.getOrientation, Some(propScaledAgent), Some(propScaledAgent))
+    drawCenteredImage(Visualization.character,
+      X(agent.pos.getX), Y(agent.pos.getY),
+      if (rotateWithAgent) -math.Pi/2 else agent.getOrientation,
+      Some(propScaledAgent), Some(propScaledAgent))
+
+    //reverse agent view
+    if (rotateWithAgent) {
+      gc.restore()
+    }
   }
 }
