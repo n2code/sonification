@@ -32,6 +32,7 @@ class Motion {
           reached = Some(currentTarget)
         }
       }
+      case _ => {}
     }
 
     agent.recorder.update(agent.pos, reached)
