@@ -29,8 +29,13 @@ class Waypoint (centerNode: Node) {
   def isReached(compare: Vector2D): Boolean = compare.distance(node.pos) <= Waypoint.thresholdReached
 
   def getAngleCorrection(agent: Agent): Double = {
-    val normalizedHoming: Vector2D = this.node.pos.subtract(agent.pos).normalize
-    val angleHoming: Double = Vector2D.angle(normalizedHoming, new Vector2D(1, 0)) * (if (agent.pos.getY < this.node.pos.getY) 1 else -1)
-    MathUtils.normalizeAngle(angleHoming - agent.getOrientation, 0.0)
+    this.node.pos.subtract(agent.pos) match {
+      case Vector2D.ZERO => 0.0
+      case homing: Vector2D => {
+        val normalizedHoming: Vector2D = homing.normalize()
+        val angleHoming: Double = Vector2D.angle(normalizedHoming, new Vector2D(1, 0)) * (if (agent.pos.getY < this.node.pos.getY) 1 else -1)
+        MathUtils.normalizeAngle(angleHoming - agent.getOrientation, 0.0)
+      }
+    }
   }
 }
