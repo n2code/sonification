@@ -27,3 +27,12 @@ task run(type: JavaExec, dependsOn: classes) {
     classpath sourceSets.main.runtimeClasspath
     classpath configurations.runtime
 }
+
+task fatJar(type: Jar) {
+    manifest { attributes "Implementation-Title": "Sonification",
+        "Main-Class": "de.n2online.sonification.Sonification"
+    }
+    baseName = project.name + "-all"
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}
