@@ -84,17 +84,19 @@ class Main extends Application {
 
     //world data
 
+    val nodesWanted: Int = 10
+
     val meshSize = Rectangle(800, 400)
     val mesh = MeshBuilder.getRandomMesh(new Vector2D(0,0), meshSize.width, meshSize.height)
     val landmarks = mesh.nodes.toList
-    assert(landmarks.length >= 2, "at least two nodes for route required!")
+    assert(landmarks.length >= nodesWanted + 1, "Grid generator did not produce enough nodes")
 
-    val randomNodes = Random.shuffle(landmarks.indices.toList).take(4).map(landmarks(_))
+    val randomNodes = Random.shuffle(landmarks.indices.toList).take(nodesWanted + 1).map(landmarks(_))
     val randomRoute = randomNodes.tail.foldLeft(List(randomNodes.head)){
       (l, next) => l ++ Dijkstra.shortestPath(l.last, next, mesh).tail
     }
 
-    route = new Route(randomRoute.tail.map(new Waypoint(_)))
+    route = new Route(randomRoute.tail.take(nodesWanted).map(new Waypoint(_)))
     Sonification.log(s"Random route with ${route.waypoints.length} waypoints initialized")
 
     agent = new Agent(randomRoute.head.x, randomRoute.head.y, Math.toRadians(45))
