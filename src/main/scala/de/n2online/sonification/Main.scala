@@ -84,12 +84,12 @@ class Main extends Application {
 
     //world data
 
-    val meshSize = Rectangle(1000, 750)
+    val meshSize = Rectangle(800, 400)
     val mesh = MeshBuilder.getRandomMesh(new Vector2D(0,0), meshSize.width, meshSize.height)
     val landmarks = mesh.nodes.toList
     assert(landmarks.length >= 2, "at least two nodes for route required!")
 
-    val randomNodes = Random.shuffle(landmarks.indices.toList).take(3).map(landmarks(_))
+    val randomNodes = Random.shuffle(landmarks.indices.toList).take(4).map(landmarks(_))
     val randomRoute = randomNodes.tail.foldLeft(List(randomNodes.head)){
       (l, next) => l ++ Dijkstra.shortestPath(l.last, next, mesh).tail
     }

@@ -7,7 +7,8 @@ import javafx.scene.paint.Color
 object Waypoint {
   final val thresholdReached: Double = 20
   final val colorVisited = Color.DARKGREEN
-  final val colorCurrent = Color.ORANGE
+  final val colorCurrentCore = Color.DARKORANGE
+  final val colorCurrentHitbox = Color.ORANGE
   final val colorNext = Color.RED
   final val colorLater = Color.DARKRED
 }

@@ -7,22 +7,22 @@ import javafx.scene.paint.Color
 import javafx.scene.transform.Rotate
 
 object Visualization {
-  private final val meshNodeRadius = 5
+  private final val meshNodeRadius = 3
   private final val meshNodeColor = Color.GREY
   private final val meshEdgeColor = Color.LIGHTGREY
   private final val backgroundColor = Color.WHITE
-  private final val agentDiameter = 30
   private final val agentPathDashes = 5.0
   private final val agentPathColor = Color.DARKBLUE
   private final val agentZoomSquareSize = 200
   private final val character = new Image(getClass.getResourceAsStream("/agent.png"))
+  private final val characterBoundaryTolerance = 3
 }
 
 class Visualization(val gc: GraphicsContext,
                     val meshWidth: Double, val meshHeight: Double) {
   var viewport = Rectangle(meshWidth, meshHeight)
   final val scaleProportional = true
-  var zoomInOnAgent = true
+  var zoomInOnAgent = false
   var rotateWithAgent = true
 
   private def drawCenteredImage(
@@ -74,7 +74,7 @@ class Visualization(val gc: GraphicsContext,
     gc.fillRect(0, 0, screen.getWidth, screen.getHeight)
 
     //agent view
-    if (rotateWithAgent) {
+    if (rotateWithAgent && zoomInOnAgent) {
       gc.save()
       val matrix: Rotate = new Rotate(Math.toDegrees(-agent.getOrientation-math.Pi/2), screen.getWidth/2, screen.getHeight/2)
       gc.setTransform(matrix.getMxx, matrix.getMyx, matrix.getMxy, matrix.getMyy, matrix.getTx, matrix.getTy)
@@ -92,22 +92,24 @@ class Visualization(val gc: GraphicsContext,
         Visualization.meshNodeRadius*2*scaleX, Visualization.meshNodeRadius*2*scaleY)
 
     //waypoints
+    val drawWaypoint = (x: Double, y: Double, radius: Double, color: Color) => {
+      gc.setFill(color)
+      gc.fillOval(X(x - radius), Y(y - radius), radius*2*scaleX, radius*2*scaleY)
+    }
+
     for (waypoint <- route.waypoints) {
+      //outer ring to indicate hitbox
+      if (waypoint == route.currentWaypoint.orNull) {
+        drawWaypoint(waypoint.node.pos.getX, waypoint.node.pos.getY, Waypoint.thresholdReached, Waypoint.colorCurrentHitbox)
+      }
+      //regular mash overlay
       val color =
         if (waypoint.visited) Waypoint.colorVisited
-        else if (waypoint == route.currentWaypoint.orNull) Waypoint.colorCurrent
+        else if (waypoint == route.currentWaypoint.orNull) Waypoint.colorCurrentCore
         else if (waypoint == route.nextWaypoint.orNull) Waypoint.colorNext
         else Waypoint.colorLater
       gc.setFill(color)
-      val diameter =
-        if (waypoint == route.currentWaypoint.orNull) Waypoint.thresholdReached
-        else Visualization.meshNodeRadius*2
-      gc.fillOval(
-        X(waypoint.node.pos.getX - diameter / 2),
-        Y(waypoint.node.pos.getY - diameter / 2),
-        diameter*scaleX,
-        diameter*scaleY
-      )
+      drawWaypoint(waypoint.node.pos.getX, waypoint.node.pos.getY, Visualization.meshNodeRadius, color)
     }
 
     //agents path
@@ -118,14 +120,15 @@ class Visualization(val gc: GraphicsContext,
     gc.strokePolyline(path.map(p => X(p.x)).toArray, path.map(p => Y(p.y)).toArray, path.length)
 
     //agent
-    val propScaledAgent = Visualization.agentDiameter * math.min(scaleX, scaleY)
+    val characterImageRadius = Waypoint.thresholdReached - Visualization.meshNodeRadius + Visualization.characterBoundaryTolerance
+    val propScaledCharacter = 2 * characterImageRadius * math.min(scaleX, scaleY)
     drawCenteredImage(Visualization.character,
       X(agent.pos.getX), Y(agent.pos.getY),
-      if (rotateWithAgent) -math.Pi/2 else agent.getOrientation,
-      Some(propScaledAgent), Some(propScaledAgent))
+      if (rotateWithAgent && zoomInOnAgent) -math.Pi/2 else agent.getOrientation,
+      Some(propScaledCharacter), Some(propScaledCharacter))
 
     //reverse agent view
-    if (rotateWithAgent) {
+    if (rotateWithAgent && zoomInOnAgent) {
       gc.restore()
     }
   }
