@@ -11,7 +11,7 @@ import javafx.scene.Parent
 import javafx.scene.Scene
 import javafx.scene.canvas.Canvas
 import javafx.scene.canvas.GraphicsContext
-import javafx.scene.control.TextArea
+import javafx.scene.control.{TextArea, TextField}
 import javafx.scene.input.KeyEvent
 import javafx.scene.layout.Pane
 import javafx.stage.Stage
@@ -125,14 +125,14 @@ class Main extends Application {
       private var last: Long = 0
       private var deltaSum: Long = 0
       private val recalcThreshold: Long = 10
-      private var reducedLogSum: Long = 0
+      private var reducedUpdateSum: Long = 0
 
       def handle(tstamp: Long) {
         val now = tstamp / 1000000
         if (last != 0) {
           val delta = now - last
           deltaSum += delta
-          reducedLogSum += delta
+          reducedUpdateSum += delta
 
           if (deltaSum >= recalcThreshold) {
             val partial: Double = deltaSum / 1000.0
@@ -145,16 +145,18 @@ class Main extends Application {
                   val angle = target.getAngleCorrection(agent)
                   sman.getGenerator.get.update(dist, angle)
                 }
-                if (reducedLogSum > 500) {
-                  Sonification.log("[TARGET]" +
-                    f" distance ${target.node.pos.distance(agent.pos).toInt}%3s," +
-                    f" angle ${Math.toDegrees(target.getAngleCorrection(agent)).toInt}%3s°")
-                  reducedLogSum = 0
+                if (reducedUpdateSum > 100) {
+                  val dist = f"${target.node.pos.distance(agent.pos).toInt}%3s"
+                  val ang = f"${Math.toDegrees(target.getAngleCorrection(agent)).toInt}%3s°"
+                  scene.lookup("#distance").asInstanceOf[TextField].setText(dist)
+                  scene.lookup("#angle").asInstanceOf[TextField].setText(ang)
+                  reducedUpdateSum = 0
                 }
               }
               case None => {
                 Sonification.log("Finished!")
                 this.stop()
+                keyboard.consumeEvents = false
               }
             }
 
@@ -170,6 +172,7 @@ class Main extends Application {
       case Success(benchmark) => {
         Sonification.log(s"Sound generator initialized in $benchmark ms")
         agent.recorder.start(agent.pos)
+        keyboard.consumeEvents = true
         simloop.start()
       }
       case Failure(ex) => Sonification.log("Sound generator init failed")
