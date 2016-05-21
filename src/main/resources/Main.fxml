@@ -8,6 +8,7 @@
 <?import javafx.scene.control.ProgressBar?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.Slider?>
+<?import javafx.scene.control.Spinner?>
 <?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
@@ -47,7 +48,7 @@
                     <panes>
                         <TitledPane text="Setup">
                           <content>
-                              <ScrollPane>
+                              <ScrollPane fitToHeight="true" fitToWidth="true">
                                   <content>
                                       <VBox>
                                           <children>
@@ -56,7 +57,7 @@
                                                 <Insets top="10.0" />
                                              </VBox.margin>
                                           </Label>
-                                          <TextField>
+                                          <TextField id="seed">
                                              <VBox.margin>
                                                 <Insets bottom="5.0" top="5.0" />
                                              </VBox.margin>
@@ -78,8 +79,8 @@
                                                   <children>
                                                       <Label text="Width:" />
                                                       <Label text="Height:" GridPane.rowIndex="1" />
-                                                      <TextField id="worldWidth" alignment="CENTER_RIGHT" GridPane.columnIndex="1" />
-                                                      <TextField id="worldHeight" alignment="CENTER_RIGHT" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                                <Spinner id="worldWidth" editable="true" GridPane.columnIndex="1" />
+                                                <Spinner id="worldHeight" editable="true" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                                                   </children>
                                                   <padding>
                                                       <Insets left="5.0" />
@@ -93,14 +94,14 @@
                                                 <Insets top="10.0" />
                                              </VBox.margin>
                                           </Label>
-                                          <Slider id="nodesWanted" majorTickUnit="5.0" max="20.0" min="5.0" minorTickCount="0" showTickLabels="true" showTickMarks="true" snapToTicks="true" value="10.0">
+                                          <Slider id="routeLength" blockIncrement="5.0" majorTickUnit="5.0" max="20.0" min="5.0" minorTickCount="0" showTickLabels="true" showTickMarks="true" snapToTicks="true" value="10.0">
                                              <VBox.margin>
                                                 <Insets bottom="5.0" top="5.0" />
                                              </VBox.margin>
                                           </Slider>
                                               <VBox alignment="TOP_CENTER">
                                                   <children>
-                                                      <Button id="start" mnemonicParsing="false" text="Start test" />
+                                                      <Button id="startTest" mnemonicParsing="false" text="Start test" />
                                                   </children>
                                              <VBox.margin>
                                                 <Insets top="20.0" />
@@ -117,15 +118,10 @@
                         </TitledPane>
                       <TitledPane disable="true" text="Status">
                         <content>
-                              <ScrollPane>
+                              <ScrollPane fitToHeight="true" fitToWidth="true">
                                  <content>
                                     <VBox>
                                        <children>
-                                          <VBox alignment="TOP_CENTER">
-                                             <children>
-                                                <Button id="playPause" mnemonicParsing="false" text="Pause" />
-                                             </children>
-                                          </VBox>
                                           <Label text="Route progress">
                                              <VBox.margin>
                                                 <Insets top="10.0" />
@@ -133,7 +129,7 @@
                                           </Label>
                                           <AnchorPane>
                                              <children>
-                                                <ProgressBar progress="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
+                                                <ProgressBar id="routeProgress" progress="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
                                              </children>
                                              <VBox.margin>
                                                 <Insets bottom="10.0" top="5.0" />
@@ -156,8 +152,8 @@
                                              <children>
                                                 <Label text="Distance:" />
                                                 <Label text="Angle:" GridPane.rowIndex="1" />
-                                                <TextField id="distance" alignment="CENTER_RIGHT" editable="false" GridPane.columnIndex="1" />
-                                                <TextField id="angle" alignment="CENTER_RIGHT" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                                <TextField id="currentTargetDistance" alignment="CENTER_RIGHT" editable="false" GridPane.columnIndex="1" />
+                                                <TextField id="currentTargetAngle" alignment="CENTER_RIGHT" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                                              </children>
                                              <padding>
                                                 <Insets left="5.0" />
@@ -166,6 +162,14 @@
                                                 <Insets bottom="5.0" top="5.0" />
                                              </VBox.margin>
                                           </GridPane>
+                                          <VBox alignment="TOP_CENTER">
+                                             <children>
+                                                <Button id="playPause" mnemonicParsing="false" text="Pause" />
+                                             </children>
+                                             <VBox.margin>
+                                                <Insets top="20.0" />
+                                             </VBox.margin>
+                                          </VBox>
                                        </children>
                                        <padding>
                                           <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
@@ -175,6 +179,25 @@
                               </ScrollPane>
                         </content>
                       </TitledPane>
+                        <TitledPane disable="true" prefHeight="200.0" prefWidth="200.0" text="Results">
+                           <content>
+                              <ScrollPane fitToHeight="true" fitToWidth="true">
+                                 <content>
+                                    <VBox alignment="TOP_CENTER">
+                                       <children>
+                                          <Button id="reset" mnemonicParsing="false" text="Reset">
+                                             <VBox.margin>
+                                                <Insets top="20.0" />
+                                             </VBox.margin>
+                                          </Button>
+                                       </children>
+                                       <padding>
+                                          <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                       </padding></VBox>
+                                 </content>
+                              </ScrollPane>
+                           </content>
+                        </TitledPane>
                     </panes>
                   </Accordion>
                </children>

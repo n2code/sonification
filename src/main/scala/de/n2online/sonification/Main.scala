@@ -148,8 +148,8 @@ class Main extends Application {
                 if (reducedUpdateSum > 100) {
                   val dist = f"${target.node.pos.distance(agent.pos).toInt}%3s"
                   val ang = f"${Math.toDegrees(target.getAngleCorrection(agent)).toInt}%3s°"
-                  scene.lookup("#distance").asInstanceOf[TextField].setText(dist)
-                  scene.lookup("#angle").asInstanceOf[TextField].setText(ang)
+                  scene.lookup("#currentTargetDistance").asInstanceOf[TextField].setText(dist)
+                  scene.lookup("#currentTargetAngle").asInstanceOf[TextField].setText(ang)
                   reducedUpdateSum = 0
                 }
               }
