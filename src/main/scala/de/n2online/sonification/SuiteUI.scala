@@ -31,7 +31,10 @@ class SuiteUI extends Application {
 
   override def stop(): Unit = {
     //TODO: anti-get
-    Sonification.sound.get.stopServer()
+    Sonification.sound match {
+      case Some(sman) => sman.stopServer()
+      case _ => /* not initialized, no need to shut down */
+    }
   }
 
   @throws[Exception]
@@ -77,9 +80,20 @@ class SuiteUI extends Application {
     animation.setCycleCount(Animation.INDEFINITE)
     animation.play()
 
-    //sound manager
+    //sound server
 
-    startSoundServer()
+    Sonification.log("[INFO] Booting SuperCollider server...")
+    startSoundServer().onComplete {
+      case Success(srv) => {
+        Sonification.log("[INFO] scsynth booted and connection established.")
+        guiDo(() => {
+          val setupStep = control[TitledPane]("setupStep")
+          setupStep.setDisable(false)
+          control[Accordion]("steps").setExpandedPane(setupStep)
+        })
+      }
+      case Failure(err) => Sonification.log("[CRITICAL] Booting server failed: "+err.getMessage)
+    }
 
     //bind controls, set default values
 
@@ -88,11 +102,15 @@ class SuiteUI extends Application {
         startExperiment() match {
           case Success(exp) => {
             Sonification.experiment = Some(exp)
-            val statusStep = control[TitledPane]("statusStep")
-            statusStep.setDisable(false)
-            control[Accordion]("steps").setExpandedPane(statusStep)
+
+            guiDo(() => {
+              blockSetupParameters(true)
+              val statusStep = control[TitledPane]("statusStep")
+              statusStep.setDisable(false)
+              control[Accordion]("steps").setExpandedPane(statusStep)
+            })
           }
-          case Failure(err) => Sonification.log(err.getMessage)
+          case Failure(err) => Sonification.log("[ERROR] "+err.getMessage)
         }
       }
     })
@@ -100,18 +118,16 @@ class SuiteUI extends Application {
     control[TextField]("worldWidth").setText("800")
     control[TextField]("worldHeight").setText("400")
     control[Slider]("routeLength").setValue(10)
-
-    control[Accordion]("steps").setExpandedPane(control[TitledPane]("setupStep"))
   }
 
   def log(line: String) {
-    Platform.runLater(new Runnable {
-      override def run(): Unit = control[TextArea]("log").appendText("\n" + line)
-    })
+    guiDo(() => control[TextArea]("log").appendText("\n" + line))
   }
 
   def startSoundServer() = {
-    Sonification.sound = Some(new SoundManager)
+    val sman = new SoundManager
+    Sonification.sound = Some(sman)
+    sman.server
   }
 
   def startExperiment(): Try[Experiment] = {
@@ -169,7 +185,7 @@ class SuiteUI extends Application {
                       val prog = exp.route.visited.length.toDouble / exp.route.waypoints.length
                       val dist = f"${target.node.pos.distance(exp.agent.pos).toInt}%3s"
                       val ang = f"${Math.toDegrees(target.getAngleCorrection(exp.agent)).toInt}%3s°"
-                      updateStatus(prog, dist, ang)
+                      guiDo(() => updateStatus(prog, dist, ang))
                       reducedUpdateSum = 0
                     }
                   }
@@ -205,12 +221,21 @@ class SuiteUI extends Application {
   }
 
   def updateStatus(progress: Double, distance: String, angle: String) = {
+    control[ProgressBar]("routeProgress").setProgress(progress)
+    control[TextField]("currentTargetDistance").setText(distance)
+    control[TextField]("currentTargetAngle").setText(angle)
+  }
+
+  def blockSetupParameters(blocked: Boolean) = {
+    control[TextField]("seed").setDisable(blocked)
+    control[TextField]("worldWidth").setDisable(blocked)
+    control[TextField]("worldHeight").setDisable(blocked)
+    control[Slider]("routeLength").setDisable(blocked)
+  }
+
+  def guiDo(func: () => Unit) = {
     Platform.runLater(new Runnable {
-      override def run(): Unit = {
-        control[ProgressBar]("routeProgress").setProgress(progress)
-        control[TextField]("currentTargetDistance").setText(distance)
-        control[TextField]("currentTargetAngle").setText(angle)
-      }
+      override def run() = func()
     })
   }
 }

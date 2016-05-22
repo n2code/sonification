@@ -17,6 +17,7 @@
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
@@ -45,7 +46,7 @@
                   </Pane>
                   <Accordion id="steps" focusTraversable="false" GridPane.columnIndex="1">
                     <panes>
-                        <TitledPane id="setupStep" text="Setup">
+                        <TitledPane id="setupStep" disable="true" text="Setup">
                           <content>
                               <ScrollPane fitToHeight="true" fitToWidth="true">
                                   <content>
@@ -100,7 +101,12 @@
                                           </Slider>
                                               <VBox alignment="TOP_CENTER">
                                                   <children>
-                                                      <Button id="startTest" mnemonicParsing="false" text="Start test" />
+                                                <HBox alignment="TOP_CENTER" spacing="10.0">
+                                                   <children>
+                                                            <Button id="startTest" defaultButton="true" mnemonicParsing="false" text="Start test" />
+                                                      <Button id="resetTest" disable="true" mnemonicParsing="false" text="Reset" />
+                                                   </children>
+                                                </HBox>
                                                   </children>
                                              <VBox.margin>
                                                 <Insets top="20.0" />

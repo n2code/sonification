@@ -1,11 +1,12 @@
 package de.n2online.sonification
 
-import de.n2online.sonification.Helpers._
+import java.lang.Exception
 
+import de.n2online.sonification.Helpers._
 import de.sciss.synth._
 
 import scala.concurrent.{Future, Promise}
-import scala.util.{Success, Failure}
+import scala.util.{Failure, Success}
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class SoundManager {
@@ -17,24 +18,25 @@ class SoundManager {
   cfg.program = "/usr/bin/scsynth"
   cfg.deviceName = Some("Sonification")
   cfg.outputBusChannels = 2
-  private val serverConnection = Server.boot(config = cfg) _
   private var s: Server = null
   val server: Future[Server] = {
     val p = Promise[Server]()
-    serverConnection({
-      case ServerConnection.Running(srv) => {
-        sync.synchronized { s = srv }
-        Sonification.log("scsynth booted and connection established.")
-        p.success(srv)
-      }
-    })
+    try {
+      Server.boot(config = cfg)({
+        case ServerConnection.Running(srv) => {
+          sync.synchronized { s = srv }
+          p.success(srv)
+        }
+      })
+    } catch {
+      case err: Exception => p.failure(err)
+    }
     p.future
   }
 
   def stopServer() = {
-    if (s.condition != Server.Offline) s.quit()
+    if (s != null && s.condition != Server.Offline) s.quit()
   }
-
 
   def execute(collidercode: Server => Unit, successMsg: Option[String] = None): Future[Long] = {
     val p = Promise[Long]()
