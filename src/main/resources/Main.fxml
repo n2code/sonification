@@ -190,7 +190,7 @@
                                  <content>
                                     <VBox alignment="TOP_CENTER">
                                        <children>
-                                          <Button id="reset" mnemonicParsing="false" text="Reset">
+                                          <Button id="restartTest" mnemonicParsing="false" text="Restart test">
                                              <VBox.margin>
                                                 <Insets top="20.0" />
                                              </VBox.margin>

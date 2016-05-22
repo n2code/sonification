@@ -117,6 +117,10 @@ class SuiteUI extends Application {
       }
     })
 
+    control[Button]("restartTest").setOnAction(new EventHandler[ActionEvent] {
+      override def handle(t: ActionEvent): Unit = control[Button]("startTest").fire()
+    })
+
     control[TextField]("worldWidth").setText("800")
     control[TextField]("worldHeight").setText("400")
     control[Slider]("routeLength").setValue(10)
