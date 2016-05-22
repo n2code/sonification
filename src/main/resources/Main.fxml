@@ -57,11 +57,15 @@
                                                 <Insets top="10.0" />
                                              </VBox.margin>
                                           </Label>
-                                          <TextField id="seed" promptText="Enter any text" text="sonification">
+                                          <HBox spacing="5.0">
                                              <VBox.margin>
                                                 <Insets bottom="5.0" top="5.0" />
                                              </VBox.margin>
-                                          </TextField>
+                                             <children>
+                                                <TextField id="seed" promptText="Enter any text" text="sonification" />
+                                                <Button id="randomSeed" mnemonicParsing="false" text="Random!" />
+                                             </children>
+                                          </HBox>
                                               <Label text="World">
                                                   <VBox.margin>
                                                       <Insets top="10.0" />

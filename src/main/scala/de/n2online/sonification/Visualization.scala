@@ -16,6 +16,7 @@ object Visualization {
   private final val agentZoomSquareSize = 200
   private final val character = new Image(getClass.getResourceAsStream("/agent.png"))
   private final val characterBoundaryTolerance = 3
+  final val FPS = 25
 }
 
 class Visualization(val gc: GraphicsContext,

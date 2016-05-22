@@ -17,6 +17,9 @@ import de.n2online.sonification.Helpers._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Failure, Random, Success, Try}
 
+object SuiteUI {
+  private val seedExamples = Array("sonification", "supercollider", "frequency", "amplitude", "phase", "noise", "sine", "sawtooth", "pulse", "envelope", "decay", "reverb", "midi", "opensoundcontrol")
+}
 
 class SuiteUI extends Application {
   private var root: Parent = null
@@ -70,7 +73,7 @@ class SuiteUI extends Application {
 
     //animation is always running :)
 
-    animation = new Timeline(new KeyFrame(Duration.millis(1000 / 25), new EventHandler[ActionEvent] {
+    animation = new Timeline(new KeyFrame(Duration.millis(1000 / Visualization.FPS), new EventHandler[ActionEvent] {
       override def handle(t: ActionEvent): Unit = {
         Sonification.experiment match {
           case Some(exp) => viz.paint(exp.agent, exp.route, exp.mesh)
@@ -98,32 +101,43 @@ class SuiteUI extends Application {
 
     //bind controls, set default values
 
-    control[Button]("startTest").setOnAction(new EventHandler[ActionEvent] {
-      override def handle(t: ActionEvent): Unit = {
-        startExperiment() match {
-          case Success(exp) => {
-            Sonification.experiment = Some(exp)
+    setButtonHandler("startTest", (e) => {
+      startExperiment() match {
+        case Success(exp) => {
+          Sonification.experiment = Some(exp)
 
-            guiDo(() => {
-              blockSetupParameters(true)
-              val statusStep = control[TitledPane]("statusStep")
-              statusStep.setDisable(false)
-              control[TitledPane]("resultsStep").setDisable(true)
-              control[Accordion]("steps").setExpandedPane(statusStep)
-            })
-          }
-          case Failure(err) => Sonification.log("[ERROR] "+err.getMessage)
+          guiDo(() => {
+            blockSetupParameters(true)
+            val statusStep = control[TitledPane]("statusStep")
+            statusStep.setDisable(false)
+            control[TitledPane]("resultsStep").setDisable(true)
+            control[Accordion]("steps").setExpandedPane(statusStep)
+          })
         }
+        case Failure(err) => Sonification.log("[ERROR] "+err.getMessage)
       }
     })
 
-    control[Button]("restartTest").setOnAction(new EventHandler[ActionEvent] {
-      override def handle(t: ActionEvent): Unit = control[Button]("startTest").fire()
+    setButtonHandler("restartTest", (e) => {
+      control[Button]("startTest").fire()
+    })
+
+    setButtonHandler("randomSeed", (e) => {
+      guiDo(() => {
+        val randomSeed = SuiteUI.seedExamples(Random.nextInt(SuiteUI.seedExamples.length))
+        control[TextField]("seed").setText(randomSeed)
+      })
     })
 
     control[TextField]("worldWidth").setText("800")
     control[TextField]("worldHeight").setText("400")
     control[Slider]("routeLength").setValue(10)
+  }
+
+  def setButtonHandler(buttonId: String, handler: (ActionEvent) => Unit) = {
+    control[Button](buttonId).setOnAction(new EventHandler[ActionEvent] {
+      override def handle(t: ActionEvent): Unit = handler(t)
+    })
   }
 
   def log(line: String) {
