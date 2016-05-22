@@ -42,6 +42,12 @@ class Visualization(val gc: GraphicsContext,
     gc.restore()
   }
 
+  def paintStandbyScreen() {
+    val screen: Canvas = gc.getCanvas
+    gc.setFill(Visualization.backgroundColor)
+    gc.fillRect(0, 0, screen.getWidth, screen.getHeight)
+  }
+
   def paint(agent: Agent, route: Route, mesh: Graph) {
     val screen: Canvas = gc.getCanvas
 

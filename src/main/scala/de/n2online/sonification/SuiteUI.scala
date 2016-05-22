@@ -1,7 +1,8 @@
 package de.n2online.sonification
 
+import de.n2online.sonification.Helpers._
 import javafx.animation.{Animation, AnimationTimer, KeyFrame, Timeline}
-import javafx.application.Application
+import javafx.application.{Application, Platform}
 import javafx.event.{ActionEvent, EventHandler}
 import javafx.fxml.FXMLLoader
 import javafx.scene.{Parent, Scene}
@@ -25,7 +26,6 @@ class SuiteUI extends Application {
   private var viz: Visualization = null
   private var monitor: Pane = null
   private var animation: Timeline = null
-  private var experiment: Option[Experiment] = None
 
   def control[T](id: String) = scene.lookup("#"+id.stripPrefix("#")).asInstanceOf[T]
 
@@ -36,7 +36,7 @@ class SuiteUI extends Application {
 
   @throws[Exception]
   def start(stage: Stage) {
-    //GUI init
+    //stage init
 
     root = FXMLLoader.load(getClass.getResource("/Main.fxml"))
     stage.setTitle("Sonification-Suite")
@@ -45,11 +45,14 @@ class SuiteUI extends Application {
     stage.show
     Sonification.gui = this
 
+    //main graphics area
+
     monitor = control[Pane]("monitor")
     screen = scene.lookup("#screen").asInstanceOf[Canvas]
     screen.widthProperty.bind(monitor.widthProperty)
     screen.heightProperty.bind(monitor.heightProperty)
     gc = screen.getGraphicsContext2D
+    viz = new Visualization(gc, screen.getWidth, screen.getHeight)
 
     //handling movement and input
 
@@ -65,26 +68,46 @@ class SuiteUI extends Application {
 
     animation = new Timeline(new KeyFrame(Duration.millis(1000 / 25), new EventHandler[ActionEvent] {
       override def handle(t: ActionEvent): Unit = {
-        experiment match {
+        Sonification.experiment match {
           case Some(exp) => viz.paint(exp.agent, exp.route, exp.mesh)
-          case _ => {/*NOOP*/}
+          case _ => viz.paintStandbyScreen()
         }
       }
     }))
     animation.setCycleCount(Animation.INDEFINITE)
     animation.play()
 
-    //INSTA-START
+    //sound manager
 
     startSoundServer()
-    startExperiment() match {
-      case Success(exp) => experiment = Some(exp)
-      case Failure(err) => Sonification.log(err.getMessage)
-    }
+
+    //bind controls, set default values
+
+    control[Button]("startTest").setOnAction(new EventHandler[ActionEvent] {
+      override def handle(t: ActionEvent): Unit = {
+        startExperiment() match {
+          case Success(exp) => {
+            Sonification.experiment = Some(exp)
+            val statusStep = control[TitledPane]("statusStep")
+            statusStep.setDisable(false)
+            control[Accordion]("steps").setExpandedPane(statusStep)
+          }
+          case Failure(err) => Sonification.log(err.getMessage)
+        }
+      }
+    })
+
+    control[TextField]("worldWidth").setText("800")
+    control[TextField]("worldHeight").setText("400")
+    control[Slider]("routeLength").setValue(10)
+
+    control[Accordion]("steps").setExpandedPane(control[TitledPane]("setupStep"))
   }
 
   def log(line: String) {
-    control[TextArea]("log").appendText("\n" + line)
+    Platform.runLater(new Runnable {
+      override def run(): Unit = control[TextArea]("log").appendText("\n" + line)
+    })
   }
 
   def startSoundServer() = {
@@ -98,8 +121,14 @@ class SuiteUI extends Application {
 
         //data setup
 
-        val worldSize = Rectangle(800, 400)
-        val exp = new Experiment(worldSize, 10)
+        val worldSize = (
+          tryToInt(control[TextField]("worldWidth").getText),
+          tryToInt(control[TextField]("worldHeight").getText)
+          ) match {
+          case (Some(wW), Some(wH)) => Rectangle(wW, wH)
+          case _ => return Failure(new Throwable("World width or height has invalid format"))
+        }
+        val exp = new Experiment(worldSize, control[Slider]("routeLength").getValue.toInt)
 
         //graphics
         viz = new Visualization(gc, monitor.getWidth, monitor.getHeight)
@@ -137,10 +166,10 @@ class SuiteUI extends Application {
                       case _ => Sonification.log("Sound dead?")
                     }
                     if (reducedUpdateSum > 100) {
+                      val prog = exp.route.visited.length.toDouble / exp.route.waypoints.length
                       val dist = f"${target.node.pos.distance(exp.agent.pos).toInt}%3s"
                       val ang = f"${Math.toDegrees(target.getAngleCorrection(exp.agent)).toInt}%3s°"
-                      scene.lookup("#currentTargetDistance").asInstanceOf[TextField].setText(dist)
-                      scene.lookup("#currentTargetAngle").asInstanceOf[TextField].setText(ang)
+                      updateStatus(prog, dist, ang)
                       reducedUpdateSum = 0
                     }
                   }
@@ -173,5 +202,15 @@ class SuiteUI extends Application {
       }
       case _ => Failure(new Throwable("Sound server not initialized"))
     }
+  }
+
+  def updateStatus(progress: Double, distance: String, angle: String) = {
+    Platform.runLater(new Runnable {
+      override def run(): Unit = {
+        control[ProgressBar]("routeProgress").setProgress(progress)
+        control[TextField]("currentTargetDistance").setText(distance)
+        control[TextField]("currentTargetAngle").setText(angle)
+      }
+    })
   }
 }

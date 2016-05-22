@@ -2,6 +2,8 @@ package de.n2online.sonification
 
 import java.lang.System.nanoTime
 
+import scala.util.Try
+
 object Helpers {
 
   def wrapToSignedPi(radianAngle: Double): Double =  {
@@ -18,5 +20,7 @@ object Helpers {
   def systemTimeInMilliseconds: Long = {
     nanoTime / 1000000
   }
+
+  def tryToInt(text: String) = Try(text.toInt).toOption
 }
 

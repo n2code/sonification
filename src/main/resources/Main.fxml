@@ -8,7 +8,6 @@
 <?import javafx.scene.control.ProgressBar?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.Slider?>
-<?import javafx.scene.control.Spinner?>
 <?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
@@ -44,9 +43,9 @@
                         <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                      </GridPane.margin>
                   </Pane>
-                  <Accordion focusTraversable="false" GridPane.columnIndex="1">
+                  <Accordion id="steps" focusTraversable="false" GridPane.columnIndex="1">
                     <panes>
-                        <TitledPane text="Setup">
+                        <TitledPane id="setupStep" text="Setup">
                           <content>
                               <ScrollPane fitToHeight="true" fitToWidth="true">
                                   <content>
@@ -79,8 +78,8 @@
                                                   <children>
                                                       <Label text="Width:" />
                                                       <Label text="Height:" GridPane.rowIndex="1" />
-                                                <Spinner id="worldWidth" editable="true" GridPane.columnIndex="1" />
-                                                <Spinner id="worldHeight" editable="true" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                                <TextField id="worldWidth" GridPane.columnIndex="1" />
+                                                <TextField id="worldHeight" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                                                   </children>
                                                   <padding>
                                                       <Insets left="5.0" />
@@ -116,7 +115,7 @@
                               </ScrollPane>
                           </content>
                         </TitledPane>
-                      <TitledPane disable="true" text="Status">
+                      <TitledPane id="statusStep" disable="true" text="Status">
                         <content>
                               <ScrollPane fitToHeight="true" fitToWidth="true">
                                  <content>
@@ -179,7 +178,7 @@
                               </ScrollPane>
                         </content>
                       </TitledPane>
-                        <TitledPane disable="true" prefHeight="200.0" prefWidth="200.0" text="Results">
+                        <TitledPane id="resultsStep" disable="true" prefHeight="200.0" prefWidth="200.0" text="Results">
                            <content>
                               <ScrollPane fitToHeight="true" fitToWidth="true">
                                  <content>
