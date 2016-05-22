@@ -57,7 +57,7 @@
                                                 <Insets top="10.0" />
                                              </VBox.margin>
                                           </Label>
-                                          <TextField id="seed">
+                                          <TextField id="seed" promptText="Enter any text" text="sonification">
                                              <VBox.margin>
                                                 <Insets bottom="5.0" top="5.0" />
                                              </VBox.margin>
@@ -167,14 +167,19 @@
                                                 <Insets bottom="5.0" top="5.0" />
                                              </VBox.margin>
                                           </GridPane>
-                                          <VBox alignment="TOP_CENTER">
-                                             <children>
-                                                <Button id="playPause" mnemonicParsing="false" text="Pause" />
-                                             </children>
+                                          <Label text="Data capture">
                                              <VBox.margin>
-                                                <Insets top="20.0" />
+                                                <Insets top="10.0" />
                                              </VBox.margin>
-                                          </VBox>
+                                          </Label>
+                                          <Label id="captureInfo">
+                                             <VBox.margin>
+                                                <Insets left="5.0" top="5.0" />
+                                             </VBox.margin>
+                                             <font>
+                                                <Font name="Monospaced Regular" size="13.0" />
+                                             </font>
+                                          </Label>
                                        </children>
                                        <padding>
                                           <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />

@@ -83,10 +83,10 @@ class SuiteUI extends Application {
 
     //sound server
 
-    Sonification.log("[INFO] Booting SuperCollider server...")
+    Sonification.log("[ENGINE] Booting SuperCollider server...")
     startSoundServer().onComplete {
       case Success(srv) => {
-        Sonification.log("[INFO] scsynth booted and connection established.")
+        Sonification.log("[ENGINE] scsynth booted and connection established.")
         guiDo(() => {
           val setupStep = control[TitledPane]("setupStep")
           setupStep.setDisable(false)
@@ -185,20 +185,21 @@ class SuiteUI extends Application {
                   case Some(target) => {
                     exp.mot.handle(partial, keyboard, exp.agent, exp.route)
                     Sonification.sound match {
-                      case Some(sman) => {
-                        if (sman.getGenerator.isDefined) {
+                      case Some(sound) => {
+                        if (sound.getGenerator.isDefined) {
                           val dist = target.node.pos.distance(exp.agent.pos)
                           val angle = target.getAngleCorrection(exp.agent)
-                          sman.getGenerator.get.update(dist, angle)
+                          sound.getGenerator.get.update(dist, angle)
                         }
                       }
-                      case _ => Sonification.log("Sound dead?")
+                      case _ => Sonification.log("[ERROR] Sound dead?")
                     }
                     if (reducedUpdateSum > 100) {
                       val prog = exp.route.visited.length.toDouble / exp.route.waypoints.length
                       val dist = f"${target.node.pos.distance(exp.agent.pos).toInt}%3s"
                       val ang = f"${Math.toDegrees(target.getAngleCorrection(exp.agent)).toInt}%3s°"
-                      guiDo(() => updateStatus(prog, dist, ang))
+                      val capinfo = exp.agent.recorder.getPath.length+" records"
+                      guiDo(() => updateStatus(prog, dist, ang, capinfo))
                       reducedUpdateSum = 0
                     }
                   }
@@ -219,12 +220,12 @@ class SuiteUI extends Application {
 
         generatorReady.onComplete {
           case Success(benchmark) => {
-            Sonification.log(s"Sound generator initialized in $benchmark ms")
+            Sonification.log(s"[ENGINE] Sound generator initialized in $benchmark ms")
             exp.agent.recorder.start(exp.agent.pos)
             keyboard.consumeEvents = true
             simloop.start()
           }
-          case Failure(ex) => Sonification.log("Sound generator init failed")
+          case Failure(ex) => Sonification.log("[ERROR] Sound generator init failed")
         }
 
         Success(exp)
@@ -233,10 +234,11 @@ class SuiteUI extends Application {
     }
   }
 
-  def updateStatus(progress: Double, distance: String, angle: String) = {
+  def updateStatus(progress: Double, distance: String, angle: String, captureInfo: String) = {
     control[ProgressBar]("routeProgress").setProgress(progress)
     control[TextField]("currentTargetDistance").setText(distance)
     control[TextField]("currentTargetAngle").setText(angle)
+    control[Label]("captureInfo").setText(captureInfo)
   }
 
   def blockSetupParameters(blocked: Boolean) = {

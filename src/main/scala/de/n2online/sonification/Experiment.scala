@@ -21,9 +21,9 @@ class Experiment(
   }
 
   val route = new Route(randomRoute.tail.take(nodesWanted).map(new Waypoint(_)))
-  Sonification.log(s"Random route with ${route.waypoints.length} waypoints initialized")
+  Sonification.log(s"[INFO] Random route with ${route.waypoints.length} waypoints initialized")
 
   val agent = new Agent(randomRoute.head.x, randomRoute.head.y, Math.toRadians(45))
-  Sonification.log(s"Agent starting position is (${randomRoute.head.x},${randomRoute.head.y})")
+  Sonification.log(s"[INFO] Agent starting position is (${randomRoute.head.x},${randomRoute.head.y})")
 
 }
