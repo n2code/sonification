@@ -1,11 +1,10 @@
 package de.n2online.sonification.generators
 
 import de.n2online.sonification.Generator
+import de.n2online.sonification.Helpers._
 import de.sciss.synth.Ops._
 import de.sciss.synth._
 import de.sciss.synth.ugen._
-
-import de.n2online.sonification.Helpers._
 
 class PanningScale extends Generator {
   private var notedef = None: Option[SynthDef]

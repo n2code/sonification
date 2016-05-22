@@ -1,7 +1,6 @@
 package de.n2online.sonification
 
 import de.n2online.sonification.Helpers._
-
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D
 import org.apache.commons.math3.util.FastMath
 

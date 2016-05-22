@@ -1,9 +1,9 @@
 package de.n2online.sonification.generators
 
 import de.n2online.sonification.Generator
+import de.sciss.synth.Ops._
 import de.sciss.synth._
-import ugen._
-import Ops._
+import de.sciss.synth.ugen._
 import org.apache.commons.math3.util.FastMath
 
 class ProximitySaws extends Generator {

@@ -1,6 +1,5 @@
 package de.n2online.sonification
 
-import scala.util.Try
 import scala.util.control.Breaks._
 
 object Dijkstra {

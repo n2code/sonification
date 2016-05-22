@@ -1,8 +1,9 @@
 package de.n2online.sonification
 
+import javafx.scene.paint.Color
+
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D
 import org.apache.commons.math3.util.MathUtils
-import javafx.scene.paint.Color
 
 object Waypoint {
   final val thresholdReached: Double = 20

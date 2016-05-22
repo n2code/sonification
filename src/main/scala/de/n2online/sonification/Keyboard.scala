@@ -1,7 +1,6 @@
 package de.n2online.sonification
 
-import javafx.scene.input.KeyCode
-import javafx.scene.input.KeyEvent
+import javafx.scene.input.{KeyCode, KeyEvent}
 
 class Keyboard {
   private var activeCodes: Set[KeyCode] = Set()
