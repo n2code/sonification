@@ -15,7 +15,7 @@ import javafx.util.Duration
 import de.n2online.sonification.Helpers._
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.util.{Failure, Success, Try}
+import scala.util.{Failure, Random, Success, Try}
 
 
 class SuiteUI extends Application {
@@ -150,7 +150,14 @@ class SuiteUI extends Application {
           case (Some(wW), Some(wH)) => Rectangle(wW, wH)
           case _ => return Failure(new Throwable("World width or height has invalid format"))
         }
-        val exp = new Experiment(worldSize, control[Slider]("routeLength").getValue.toInt)
+
+        val textSeed = control[TextField]("seed").getText
+        val rnd = new Random(textSeed.hashCode)
+
+        val routeLength = control[Slider]("routeLength").getValue.toInt
+
+        Sonification.log(s"[INFO] New test: $routeLength node route on $worldSize with seed "+"\""+textSeed+"\"")
+        val exp = new Experiment(worldSize, routeLength, rnd)
 
         //graphics
         viz = new Visualization(gc, monitor.getWidth, monitor.getHeight)

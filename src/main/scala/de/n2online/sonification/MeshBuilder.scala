@@ -9,8 +9,8 @@ object MeshBuilder {
   def getRandomMesh(
                     topleft: Vector2D,
                     width: Double, height: Double,
-                    cellNumX: Option[Int] = None, cellNumY: Option[Int] = None,
-                    seed: Int = Random.nextInt()
+                    randomSource: Random,
+                    cellNumX: Option[Int] = None, cellNumY: Option[Int] = None
                    ): Graph = {
     //settings
     val defaultCellSize = 100 //used if no number of cells per dimension is given
@@ -18,10 +18,9 @@ object MeshBuilder {
     val pCellEmpty = 0.15 //chance that a cell contains no node
 
     //reproducable randomness
-    val rnd = new Random(seed)
     def randomVariance: Double = {
       //random signed variance < abs(centerVariance)
-      rnd.nextDouble()*2*centerVariance - centerVariance
+      randomSource.nextDouble()*2*centerVariance - centerVariance
     }
 
     //calculate dimensions
@@ -37,7 +36,7 @@ object MeshBuilder {
       val nodeX = topleft.getX + (x + 0.5 + randomVariance)*cellWidth
       val nodeY = topleft.getY + (y + 0.5 + randomVariance)*cellHeight
 
-      if (rnd.nextDouble()<pCellEmpty) None else Some(Node(nodeX, nodeY, Cell(x, y, cellWidth, cellHeight)))
+      if (randomSource.nextDouble()<pCellEmpty) None else Some(Node(nodeX, nodeY, Cell(x, y, cellWidth, cellHeight)))
     }}.flatten.flatten.toSet //we now got all nodes
 
     val edges: Set[Edge] = nodes.flatMap(from => {
