@@ -6,7 +6,7 @@ import scala.util.Try
 
 object Helpers {
 
-  def wrapToSignedPi(radianAngle: Double): Double =  {
+  def wrapToSignedPi(radianAngle: Double): Double = {
     var angle: Double = radianAngle
     while (angle > Math.PI) {
       angle -= 2 * Math.PI

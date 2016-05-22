@@ -7,10 +7,10 @@ import scala.util.{Failure, Random, Success, Try}
 object MeshBuilder {
 
   def getRandomMesh(
-                    topleft: Vector2D,
-                    width: Double, height: Double,
-                    randomSource: Random,
-                    cellNumX: Option[Int] = None, cellNumY: Option[Int] = None
+                     topleft: Vector2D,
+                     width: Double, height: Double,
+                     randomSource: Random,
+                     cellNumX: Option[Int] = None, cellNumY: Option[Int] = None
                    ): Try[Graph] = {
     //settings
     val defaultCellSize = 100 //used if no number of cells per dimension is given
@@ -20,24 +20,25 @@ object MeshBuilder {
     //reproducable randomness
     def randomVariance: Double = {
       //random signed variance < abs(centerVariance)
-      randomSource.nextDouble()*2*centerVariance - centerVariance
+      randomSource.nextDouble() * 2 * centerVariance - centerVariance
     }
 
     //calculate dimensions
-    val cellsX: Int = cellNumX.getOrElse((width/defaultCellSize).floor.toInt)
-    val cellsY: Int = cellNumY.getOrElse((height/defaultCellSize).floor.toInt)
+    val cellsX: Int = cellNumX.getOrElse((width / defaultCellSize).floor.toInt)
+    val cellsY: Int = cellNumY.getOrElse((height / defaultCellSize).floor.toInt)
 
-    val cellWidth  = width  / cellsX
+    val cellWidth = width / cellsX
     val cellHeight = height / cellsY
 
     //generate nodes
     val nodes: Set[Node] = List.tabulate[Option[Node]](cellsX, cellsY) { (x, y) => {
       //calculate cell center with random variance of both dimensions by centerVariance
-      val nodeX = topleft.getX + (x + 0.5 + randomVariance)*cellWidth
-      val nodeY = topleft.getY + (y + 0.5 + randomVariance)*cellHeight
+      val nodeX = topleft.getX + (x + 0.5 + randomVariance) * cellWidth
+      val nodeY = topleft.getY + (y + 0.5 + randomVariance) * cellHeight
 
-      if (randomSource.nextDouble()<pCellEmpty) None else Some(Node(nodeX, nodeY, Cell(x, y, cellWidth, cellHeight)))
-    }}.flatten.flatten.toSet //we now got all nodes
+      if (randomSource.nextDouble() < pCellEmpty) None else Some(Node(nodeX, nodeY, Cell(x, y, cellWidth, cellHeight)))
+    }
+    }.flatten.flatten.toSet //we now got all nodes
 
     if (nodes.size < 4) return Failure(new IllegalArgumentException("Less than four nodes generated. Bad luck / check parameters!"))
 
@@ -45,10 +46,10 @@ object MeshBuilder {
       //connect nodes of adjacent cells
       val targets = nodes.filter { to =>
         (
-             (from.cell.x - 1 to from.cell.x + 1).contains(to.cell.x) //neighbourhood constraint X
-          && (from.cell.y - 1 to from.cell.y + 1).contains(to.cell.y) //neighbourhood constraint Y
-          && (from.cell.x, from.cell.y) !=(to.cell.x, to.cell.y) //...and no reflexive edge relation please :)
-        )
+          (from.cell.x - 1 to from.cell.x + 1).contains(to.cell.x) //neighbourhood constraint X
+            && (from.cell.y - 1 to from.cell.y + 1).contains(to.cell.y) //neighbourhood constraint Y
+            && (from.cell.x, from.cell.y) !=(to.cell.x, to.cell.y) //...and no reflexive edge relation please :)
+          )
       }
       targets.map(Edge(from, _))
     })

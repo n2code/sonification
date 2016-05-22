@@ -36,10 +36,12 @@ class ProximitySaws extends Generator {
   override def update(absoluteDistance: Double, dummy: Double): Unit = {
     assertInitialized
 
-    val newFactor = FastMath.max(0.0, 400.0-absoluteDistance) / 400
+    val newFactor = FastMath.max(0.0, 400.0 - absoluteDistance) / 400
 
     synth.get.set("factor" -> newFactor)
   }
 
-  override def reachedWaypoint(): Unit = { /*NO-OP*/ }
+  override def reachedWaypoint(): Unit = {
+    /*NO-OP*/
+  }
 }

@@ -46,14 +46,14 @@ class PathRecorder {
 
     path += TimedPosition(posCurrent.getX, posCurrent.getY, tDelta, reachedWaypoint)
 
-    reachedWaypoint match{
+    reachedWaypoint match {
       case Some(waypoint) => {
         //calculate stats
         waypoint.statUserTimeMilliseconds = Some(tNow - tWaypointTackled)
         waypoint.statStraightDistance = Some(posCurrent.distance(posTargetAcquired))
         waypoint.statUserDistance = Some(accDistance)
         val perfectTime = (waypoint.statStraightDistance.get / Agent.maxSpeed).toInt
-        Sonification.log(s"[REACHED] time ${waypoint.statUserTimeMilliseconds.get/1000}sec (${perfectTime}sec optimum)" +
+        Sonification.log(s"[REACHED] time ${waypoint.statUserTimeMilliseconds.get / 1000}sec (${perfectTime}sec optimum)" +
           s", distance ${waypoint.statUserDistance.get.toInt} (${waypoint.statStraightDistance.get.toInt} optimum)")
 
         //reset counters

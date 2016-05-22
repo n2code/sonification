@@ -55,20 +55,20 @@ class Visualization(val gc: GraphicsContext,
 
     if (zoomInOnAgent) {
       viewport = Rectangle(Visualization.agentZoomSquareSize, Visualization.agentZoomSquareSize,
-        agent.pos.getX - Visualization.agentZoomSquareSize/2, agent.pos.getY - Visualization.agentZoomSquareSize/2)
+        agent.pos.getX - Visualization.agentZoomSquareSize / 2, agent.pos.getY - Visualization.agentZoomSquareSize / 2)
     }
 
     /***** adjustment functions *****/
 
     //stretching scale
-    val rawScaleX = screen.getWidth  / viewport.width
+    val rawScaleX = screen.getWidth / viewport.width
     val rawScaleY = screen.getHeight / viewport.height
     //scale proportional if asked for
     val scaleX = if (scaleProportional) math.min(rawScaleX, rawScaleY) else rawScaleX
     val scaleY = if (scaleProportional) math.min(rawScaleX, rawScaleY) else rawScaleY
     //center viewport
-    val centerAdjustX = screen.getWidth/2 - viewport.width*scaleX/2
-    val centerAdjustY = screen.getHeight/2 - viewport.height*scaleY/2
+    val centerAdjustX = screen.getWidth / 2 - viewport.width * scaleX / 2
+    val centerAdjustY = screen.getHeight / 2 - viewport.height * scaleY / 2
     //how to calculate projected coordinates on canvas
     val X = (x: Double) => (x - viewport.x) * scaleX + centerAdjustX
     val Y = (y: Double) => (y - viewport.y) * scaleY + centerAdjustY
@@ -82,7 +82,7 @@ class Visualization(val gc: GraphicsContext,
     //agent view
     if (rotateWithAgent && zoomInOnAgent) {
       gc.save()
-      val matrix: Rotate = new Rotate(Math.toDegrees(-agent.getOrientation-math.Pi/2), screen.getWidth/2, screen.getHeight/2)
+      val matrix: Rotate = new Rotate(Math.toDegrees(-agent.getOrientation - math.Pi / 2), screen.getWidth / 2, screen.getHeight / 2)
       gc.setTransform(matrix.getMxx, matrix.getMyx, matrix.getMxy, matrix.getMyy, matrix.getTx, matrix.getTy)
       //restored later
     }
@@ -95,12 +95,12 @@ class Visualization(val gc: GraphicsContext,
     gc.setFill(Visualization.meshNodeColor)
     for (node <- mesh.nodes)
       gc.fillOval(X(node.x - Visualization.meshNodeRadius), Y(node.y - Visualization.meshNodeRadius),
-        Visualization.meshNodeRadius*2*scaleX, Visualization.meshNodeRadius*2*scaleY)
+        Visualization.meshNodeRadius * 2 * scaleX, Visualization.meshNodeRadius * 2 * scaleY)
 
     //waypoints
     val drawWaypoint = (x: Double, y: Double, radius: Double, color: Color) => {
       gc.setFill(color)
-      gc.fillOval(X(x - radius), Y(y - radius), radius*2*scaleX, radius*2*scaleY)
+      gc.fillOval(X(x - radius), Y(y - radius), radius * 2 * scaleX, radius * 2 * scaleY)
     }
 
     for (waypoint <- route.waypoints) {
@@ -130,7 +130,7 @@ class Visualization(val gc: GraphicsContext,
     val propScaledCharacter = 2 * characterImageRadius * math.min(scaleX, scaleY)
     drawCenteredImage(Visualization.character,
       X(agent.pos.getX), Y(agent.pos.getY),
-      if (rotateWithAgent && zoomInOnAgent) -math.Pi/2 else agent.getOrientation,
+      if (rotateWithAgent && zoomInOnAgent) -math.Pi / 2 else agent.getOrientation,
       Some(propScaledCharacter), Some(propScaledCharacter))
 
     //reverse agent view

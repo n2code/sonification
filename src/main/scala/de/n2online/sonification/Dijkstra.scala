@@ -10,7 +10,9 @@ object Dijkstra {
     val nodes: Set[DijkstraNode] = graph.nodes.map(n => new DijkstraNode(n, if (n == start) Some(0) else None))
     val edges = graph.edges
 
-    val queue = () => { nodes.filter(_.queued) }
+    val queue = () => {
+      nodes.filter(_.queued)
+    }
 
     def updateDistance(u: DijkstraNode, v: DijkstraNode) = {
       val alternative = u.distance + u.node.pos.distance(v.node.pos)
@@ -58,5 +60,6 @@ class DijkstraNode(n: Node, dist: Option[Double]) {
     case that: DijkstraNode => that.node.equals(this.node)
     case _ => false
   }
+
   override def hashCode = node.hashCode()
 }

@@ -14,7 +14,7 @@ object Waypoint {
   final val colorLater = Color.DARKRED
 }
 
-class Waypoint (centerNode: Node) {
+class Waypoint(centerNode: Node) {
   val node = centerNode
   var visited: Boolean = false
 
@@ -26,6 +26,7 @@ class Waypoint (centerNode: Node) {
     case that: Waypoint => that.node.equals(this.node)
     case _ => false
   }
+
   override def hashCode = node.hashCode()
 
   def isReached(compare: Vector2D): Boolean = compare.distance(node.pos) <= Waypoint.thresholdReached

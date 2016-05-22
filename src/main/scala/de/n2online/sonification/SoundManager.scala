@@ -22,7 +22,9 @@ class SoundManager {
     try {
       Server.boot(config = cfg)({
         case ServerConnection.Running(srv) => {
-          sync.synchronized { s = srv }
+          sync.synchronized {
+            s = srv
+          }
           p.success(srv)
         }
       })
@@ -53,14 +55,18 @@ class SoundManager {
   }
 
   def freeAll() = {
-    execute((s: Server) => { s.defaultGroup.freeAllMsg })
+    execute((s: Server) => {
+      s.defaultGroup.freeAllMsg
+    })
   }
 
   def getGenerator = generator
 
   def setGenerator(sgen: Generator): Future[Long] = {
     generator = Some(sgen)
-    execute((s: Server) => { sgen.initialize(s) }, Some(s"Generator ${sgen.getClass.getSimpleName} initialized."))
+    execute((s: Server) => {
+      sgen.initialize(s)
+    }, Some(s"Generator ${sgen.getClass.getSimpleName} initialized."))
   }
 
 }

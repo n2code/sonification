@@ -24,7 +24,7 @@ class Experiment(
   val motion = new Motion
   var simulation: AnimationTimer = null
 
-  val mesh = MeshBuilder.getRandomMesh(new Vector2D(0,0), meshSize.width, meshSize.height, randomSource) match {
+  val mesh = MeshBuilder.getRandomMesh(new Vector2D(0, 0), meshSize.width, meshSize.height, randomSource) match {
     case Success(world) => world
     case Failure(err) => throw err
   }
@@ -32,7 +32,7 @@ class Experiment(
   assert(landmarks.length >= nodesWanted + 1, "Grid generator did not produce enough nodes")
 
   private val randomNodes = randomSource.shuffle(landmarks.indices.toList).take(nodesWanted + 1).map(landmarks(_))
-  private val randomRoute = randomNodes.tail.foldLeft(List(randomNodes.head)){
+  private val randomRoute = randomNodes.tail.foldLeft(List(randomNodes.head)) {
     (l, next) => l ++ Dijkstra.shortestPath(l.last, next, mesh).tail
   }
 

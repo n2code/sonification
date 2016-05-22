@@ -23,7 +23,7 @@ class PanningScale extends Generator {
       val calculatedNote = LinLin("linHeight".kr(0.5), 0.0, 1.0, midiLow, midiHigh).roundTo(1)
       val freq = calculatedNote.midicps
 
-      val pure = SinOsc.ar(freq/2) * 0.1 + SinOsc.ar(freq) * 0.25 + Pulse.ar(freq) * 0.2
+      val pure = SinOsc.ar(freq / 2) * 0.1 + SinOsc.ar(freq) * 0.25 + Pulse.ar(freq) * 0.2
 
       val hi = Seg(0.05, 1)
       val mid = Seg(0.1, 0.5.dbamp)
@@ -33,7 +33,7 @@ class PanningScale extends Generator {
       val sig = pure * env
 
       val panned = Pan2.ar(sig, LinLin("signedPan".kr(0.0), -math.Pi, math.Pi, -1.0, 1.0))
-      Out.ar(0, panned*gvol.dbamp)
+      Out.ar(0, panned * gvol.dbamp)
     })
   }
 
@@ -49,7 +49,7 @@ class PanningScale extends Generator {
     if (deltaAcc > noteDeltaThreshold) {
 
       Some(notedef.get.play(args = List(
-        "linHeight" -> math.max(0, 1000 - absoluteDistance)/1000.0,
+        "linHeight" -> math.max(0, 1000 - absoluteDistance) / 1000.0,
         "signedPan" -> correctionAngle,
         "linVol" -> 1.0
       )))
@@ -59,5 +59,7 @@ class PanningScale extends Generator {
     lastUpdate = now
   }
 
-  override def reachedWaypoint(): Unit = { /*NO-OP*/ }
+  override def reachedWaypoint(): Unit = {
+    /*NO-OP*/
+  }
 }

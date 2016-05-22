@@ -31,7 +31,7 @@ class SuiteUI extends Application {
   private var monitor: Pane = null
   private var animation: Timeline = null
 
-  def control[T](id: String) = scene.lookup("#"+id.stripPrefix("#")).asInstanceOf[T]
+  def control[T](id: String) = scene.lookup("#" + id.stripPrefix("#")).asInstanceOf[T]
 
   override def stop(): Unit = {
     //TODO: anti-get
@@ -96,7 +96,7 @@ class SuiteUI extends Application {
           control[Accordion]("steps").setExpandedPane(setupStep)
         })
       }
-      case Failure(err) => Sonification.log("[CRITICAL] Booting server failed: "+err.getMessage)
+      case Failure(err) => Sonification.log("[CRITICAL] Booting server failed: " + err.getMessage)
     }
 
     //bind controls, set default values
@@ -114,7 +114,7 @@ class SuiteUI extends Application {
             control[Accordion]("steps").setExpandedPane(statusStep)
           })
         }
-        case Failure(err) => Sonification.log("[ERROR] "+err.getMessage)
+        case Failure(err) => Sonification.log("[ERROR] " + err.getMessage)
       }
     })
 
@@ -177,7 +177,7 @@ class SuiteUI extends Application {
 
         val routeLength = control[Slider]("routeLength").getValue.toInt
 
-        Sonification.log(s"[INFO] New test: $routeLength node route on $worldSize with seed "+"\""+textSeed+"\"")
+        Sonification.log(s"[INFO] New test: $routeLength node route on $worldSize with seed " + "\"" + textSeed + "\"")
         val exp = Experiment.build(worldSize, routeLength, rnd) match {
           case Success(scenario) => scenario
           case Failure(err) => return Failure(err)
@@ -228,7 +228,7 @@ class SuiteUI extends Application {
                       val prog = exp.route.visited.length.toDouble / exp.route.waypoints.length
                       val dist = f"${target.node.pos.distance(exp.agent.pos).toInt}%3s"
                       val ang = f"${Math.toDegrees(target.getAngleCorrection(exp.agent)).toInt}%3s°"
-                      val capinfo = exp.agent.recorder.getPath.length+" records"
+                      val capinfo = exp.agent.recorder.getPath.length + " records"
                       guiDo(() => updateStatus(prog, dist, ang, capinfo))
                       reducedUpdateSum = 0
                     }
