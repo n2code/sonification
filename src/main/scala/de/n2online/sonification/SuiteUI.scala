@@ -1,20 +1,21 @@
 package de.n2online.sonification
 
-import de.n2online.sonification.Helpers._
 import javafx.animation.{Animation, AnimationTimer, KeyFrame, Timeline}
 import javafx.application.{Application, Platform}
 import javafx.event.{ActionEvent, EventHandler}
 import javafx.fxml.FXMLLoader
-import javafx.scene.{Parent, Scene}
 import javafx.scene.canvas.{Canvas, GraphicsContext}
 import javafx.scene.control._
 import javafx.scene.input.KeyEvent
 import javafx.scene.layout.Pane
+import javafx.scene.{Parent, Scene}
 import javafx.stage.Stage
 import javafx.util.Duration
 
+import de.n2online.sonification.Helpers._
+
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.util.{Failure, Random, Success, Try}
+import scala.util.{Failure, Success, Try}
 
 
 class SuiteUI extends Application {
