@@ -57,7 +57,7 @@ class SoundManager {
   def getGenerator = generator
 
   def setGenerator(sgen: Generator): Future[Long] = {
-    //execute((s: Server) => { ??? }) //TODO: free previous
+    execute((s: Server) => { s.defaultGroup.freeAllMsg })
     generator = Some(sgen)
     execute((s: Server) => { sgen.initialize(s) }, Some(s"Generator ${sgen.getClass.getSimpleName} initialized."))
   }
