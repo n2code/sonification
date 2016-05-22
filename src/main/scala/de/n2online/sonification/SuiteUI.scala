@@ -129,6 +129,14 @@ class SuiteUI extends Application {
       })
     })
 
+    setButtonHandler("resetTest", (e) => {
+      resetExperiment()
+      guiDo(() => {
+        control[TitledPane]("statusStep").setDisable(true)
+        blockSetupParameters(false)
+      })
+    })
+
     control[TextField]("worldWidth").setText("800")
     control[TextField]("worldHeight").setText("400")
     control[Slider]("routeLength").setValue(10)
@@ -178,7 +186,7 @@ class SuiteUI extends Application {
         viz.viewport = Rectangle(worldSize.width, worldSize.height, 0, 0)
 
         //calculation (sim & sound) :
-        val simloop = new AnimationTimer() {
+        exp.simulation = new AnimationTimer() {
 
           private var last: Long = 0
           private var deltaSum: Long = 0
@@ -197,7 +205,7 @@ class SuiteUI extends Application {
 
                 exp.route.currentWaypoint match {
                   case Some(target) => {
-                    exp.mot.handle(partial, keyboard, exp.agent, exp.route)
+                    exp.motion.handle(partial, keyboard, exp.agent, exp.route)
                     Sonification.sound match {
                       case Some(sound) => {
                         if (sound.getGenerator.isDefined) {
@@ -237,7 +245,7 @@ class SuiteUI extends Application {
             Sonification.log(s"[ENGINE] Sound generator initialized in $benchmark ms")
             exp.agent.recorder.start(exp.agent.pos)
             keyboard.consumeEvents = true
-            simloop.start()
+            exp.simulation.start()
           }
           case Failure(ex) => Sonification.log("[ERROR] Sound generator init failed")
         }
@@ -257,6 +265,7 @@ class SuiteUI extends Application {
 
   def blockSetupParameters(blocked: Boolean) = {
     control[TextField]("seed").setDisable(blocked)
+    control[Button]("randomSeed").setDisable(blocked)
     control[TextField]("worldWidth").setDisable(blocked)
     control[TextField]("worldHeight").setDisable(blocked)
     control[Slider]("routeLength").setDisable(blocked)
@@ -272,6 +281,7 @@ class SuiteUI extends Application {
 
   def experimentFinished() = {
     Sonification.log("[INFO] Test finished.")
+    stopSound()
     guiDo(() => {
       control[TitledPane]("statusStep").setDisable(true)
       val resultsStep = control[TitledPane]("resultsStep")
@@ -279,5 +289,21 @@ class SuiteUI extends Application {
       control[Accordion]("steps").setExpandedPane(resultsStep)
       blockSetupParameters(false)
     })
+  }
+
+  def resetExperiment() = {
+    Sonification.log("[INFO] Test interrupted.")
+    stopSound()
+    Sonification.experiment match {
+      case Some(exp) => exp.simulation.stop()
+      case _ => assert(false, "reset triggered but no test running")
+    }
+  }
+
+  def stopSound() = {
+    Sonification.sound match {
+      case Some(sman) => sman.freeAll()
+      case _ => assert(false, "sound kill triggered but no sound active")
+    }
   }
 }

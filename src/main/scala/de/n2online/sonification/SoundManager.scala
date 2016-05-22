@@ -1,13 +1,11 @@
 package de.n2online.sonification
 
-import java.lang.Exception
-
 import de.n2online.sonification.Helpers._
 import de.sciss.synth._
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{Future, Promise}
 import scala.util.{Failure, Success}
-import scala.concurrent.ExecutionContext.Implicits.global
 
 class SoundManager {
   private var generator = None: Option[Generator]
@@ -54,10 +52,13 @@ class SoundManager {
     p.future
   }
 
+  def freeAll() = {
+    execute((s: Server) => { s.defaultGroup.freeAllMsg })
+  }
+
   def getGenerator = generator
 
   def setGenerator(sgen: Generator): Future[Long] = {
-    execute((s: Server) => { s.defaultGroup.freeAllMsg })
     generator = Some(sgen)
     execute((s: Server) => { sgen.initialize(s) }, Some(s"Generator ${sgen.getClass.getSimpleName} initialized."))
   }

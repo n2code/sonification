@@ -1,5 +1,7 @@
 package de.n2online.sonification
 
+import javafx.animation.AnimationTimer
+
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D
 
 import scala.util.Random
@@ -9,7 +11,8 @@ class Experiment(
                   val nodesWanted: Int,
                   val randomSource: Random
                 ) {
-  val mot = new Motion
+  val motion = new Motion
+  var simulation: AnimationTimer = null
 
   val mesh = MeshBuilder.getRandomMesh(new Vector2D(0,0), meshSize.width, meshSize.height, randomSource)
   private val landmarks = mesh.nodes.toList
