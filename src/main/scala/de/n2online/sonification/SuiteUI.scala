@@ -161,7 +161,6 @@ class SuiteUI extends Application {
   def startExperiment(): Try[Experiment] = {
     Sonification.sound match {
       case Some(sman) => {
-        val generatorReady = sman.setGenerator(new generators.PanningScale)
 
         //data setup
 
@@ -179,13 +178,22 @@ class SuiteUI extends Application {
         val routeLength = control[Slider]("routeLength").getValue.toInt
 
         Sonification.log(s"[INFO] New test: $routeLength node route on $worldSize with seed "+"\""+textSeed+"\"")
-        val exp = new Experiment(worldSize, routeLength, rnd)
+        val exp = Experiment.build(worldSize, routeLength, rnd) match {
+          case Success(scenario) => scenario
+          case Failure(err) => return Failure(err)
+        }
+
+        //sound
+
+        val generatorReady = sman.setGenerator(new generators.PanningScale)
 
         //graphics
+
         viz = new Visualization(gc, monitor.getWidth, monitor.getHeight)
         viz.viewport = Rectangle(worldSize.width, worldSize.height, 0, 0)
 
-        //calculation (sim & sound) :
+        //calculation (simulation & sound updates) :
+
         exp.simulation = new AnimationTimer() {
 
           private var last: Long = 0
@@ -240,6 +248,8 @@ class SuiteUI extends Application {
           }
         }
 
+        //ready for takeoff
+
         generatorReady.onComplete {
           case Success(benchmark) => {
             Sonification.log(s"[ENGINE] Sound generator initialized in $benchmark ms")
@@ -250,7 +260,7 @@ class SuiteUI extends Application {
           case Failure(ex) => Sonification.log("[ERROR] Sound generator init failed")
         }
 
-        Success(exp)
+        Success(exp) //now only sound could fail
       }
       case _ => Failure(new Throwable("Sound server not initialized"))
     }

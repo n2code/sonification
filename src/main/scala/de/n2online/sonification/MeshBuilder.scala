@@ -2,7 +2,7 @@ package de.n2online.sonification
 
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D
 
-import scala.util.Random
+import scala.util.{Failure, Random, Success, Try}
 
 object MeshBuilder {
 
@@ -11,7 +11,7 @@ object MeshBuilder {
                     width: Double, height: Double,
                     randomSource: Random,
                     cellNumX: Option[Int] = None, cellNumY: Option[Int] = None
-                   ): Graph = {
+                   ): Try[Graph] = {
     //settings
     val defaultCellSize = 100 //used if no number of cells per dimension is given
     val centerVariance = 0.3 //center varied by 30% of the cells width and height
@@ -39,6 +39,8 @@ object MeshBuilder {
       if (randomSource.nextDouble()<pCellEmpty) None else Some(Node(nodeX, nodeY, Cell(x, y, cellWidth, cellHeight)))
     }}.flatten.flatten.toSet //we now got all nodes
 
+    if (nodes.size < 4) return Failure(new IllegalArgumentException("Less than four nodes generated. Bad luck / check parameters!"))
+
     val edges: Set[Edge] = nodes.flatMap(from => {
       //connect nodes of adjacent cells
       val targets = nodes.filter { to =>
@@ -51,7 +53,7 @@ object MeshBuilder {
       targets.map(Edge(from, _))
     })
 
-    new Graph(nodes, edges)
+    Success(new Graph(nodes, edges))
   }
 
 }

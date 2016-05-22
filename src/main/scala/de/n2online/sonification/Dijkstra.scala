@@ -1,5 +1,8 @@
 package de.n2online.sonification
 
+import scala.util.Try
+import scala.util.control.Breaks._
+
 object Dijkstra {
   def shortestPath(start: Node, target: Node, graph: Graph): List[Node] = {
 
@@ -20,11 +23,14 @@ object Dijkstra {
 
     //running the algorithm
 
-    while (queue().nonEmpty) {
-      val u = queue().minBy(_.distance)
-      u.queued = false
-      val neighboursInQueue = nodes.filter { v => edges.contains(Edge(u.node, v.node)) && queue().contains(v) }
-      neighboursInQueue.foreach(v => updateDistance(u, v))
+    breakable {
+      while (queue().nonEmpty) {
+        val u = queue().minBy(_.distance)
+        u.queued = false
+        if (u.node == target) break
+        val neighboursInQueue = nodes.filter { v => edges.contains(Edge(u.node, v.node)) && queue().contains(v) }
+        neighboursInQueue.foreach(v => updateDistance(u, v))
+      }
     }
 
     //piecing together the shortest path
@@ -37,7 +43,7 @@ object Dijkstra {
     val targetDNode = nodes.find(_.node == target)
     targetDNode.isDefined match {
       case true => calculatePath(targetDNode.get).map(_.node)
-      case false => List()
+      case false => throw new IllegalArgumentException("Dijkstra did not find a path")
     }
 
   }

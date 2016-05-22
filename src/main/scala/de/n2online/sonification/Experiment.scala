@@ -4,7 +4,17 @@ import javafx.animation.AnimationTimer
 
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D
 
-import scala.util.Random
+import scala.util.{Failure, Random, Success, Try}
+
+object Experiment {
+  def build(worldSize: Rectangle, routeLength: Int, randomSource: Random): Try[Experiment] = {
+    try {
+      Success(new Experiment(worldSize, routeLength, randomSource))
+    } catch {
+      case err: Throwable => Failure(err)
+    }
+  }
+}
 
 class Experiment(
                   val meshSize: Rectangle,
@@ -14,7 +24,10 @@ class Experiment(
   val motion = new Motion
   var simulation: AnimationTimer = null
 
-  val mesh = MeshBuilder.getRandomMesh(new Vector2D(0,0), meshSize.width, meshSize.height, randomSource)
+  val mesh = MeshBuilder.getRandomMesh(new Vector2D(0,0), meshSize.width, meshSize.height, randomSource) match {
+    case Success(world) => world
+    case Failure(err) => throw err
+  }
   private val landmarks = mesh.nodes.toList
   assert(landmarks.length >= nodesWanted + 1, "Grid generator did not produce enough nodes")
 
