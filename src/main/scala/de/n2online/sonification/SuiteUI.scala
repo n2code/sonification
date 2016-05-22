@@ -108,6 +108,7 @@ class SuiteUI extends Application {
               blockSetupParameters(true)
               val statusStep = control[TitledPane]("statusStep")
               statusStep.setDisable(false)
+              control[TitledPane]("resultsStep").setDisable(true)
               control[Accordion]("steps").setExpandedPane(statusStep)
             })
           }
@@ -191,7 +192,7 @@ class SuiteUI extends Application {
                     }
                   }
                   case None => {
-                    Sonification.log("Finished!")
+                    experimentFinished()
                     this.stop()
                     keyboard.consumeEvents = false
                   }
@@ -232,11 +233,24 @@ class SuiteUI extends Application {
     control[TextField]("worldWidth").setDisable(blocked)
     control[TextField]("worldHeight").setDisable(blocked)
     control[Slider]("routeLength").setDisable(blocked)
+    control[Button]("startTest").setDisable(blocked)
+    control[Button]("resetTest").setDisable(!blocked)
   }
 
   def guiDo(func: () => Unit) = {
     Platform.runLater(new Runnable {
       override def run() = func()
+    })
+  }
+
+  def experimentFinished() = {
+    Sonification.log("[INFO] Test finished.")
+    guiDo(() => {
+      control[TitledPane]("statusStep").setDisable(true)
+      val resultsStep = control[TitledPane]("resultsStep")
+      resultsStep.setDisable(false)
+      control[Accordion]("steps").setExpandedPane(resultsStep)
+      blockSetupParameters(false)
     })
   }
 }
