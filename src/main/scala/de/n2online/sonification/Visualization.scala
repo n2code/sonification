@@ -15,14 +15,14 @@ object Visualization {
   private final val agentZoomSquareSize = 200
   private final val character = new Image(getClass.getResourceAsStream("/agent.png"))
   private final val characterBoundaryTolerance = 3
-  final val FPS = 25
+  final val FPS = 30
 }
 
 class Visualization(val gc: GraphicsContext,
                     val meshWidth: Double, val meshHeight: Double) {
   var viewport = Rectangle(meshWidth, meshHeight)
   final val scaleProportional = true
-  var zoomInOnAgent = false
+  var zoomInOnAgent = true
   var rotateWithAgent = true
 
   private def drawCenteredImage(
@@ -79,6 +79,8 @@ class Visualization(val gc: GraphicsContext,
 
     /***** DRAWING ****/
 
+    val screenRect = Rectangle(screen.getWidth, screen.getHeight, 0, 0)
+
     //background
     gc.setFill(Visualization.backgroundColor)
     gc.fillRect(0, 0, screen.getWidth, screen.getHeight)
@@ -91,20 +93,39 @@ class Visualization(val gc: GraphicsContext,
       //restored later
     }
 
-    //node mesh
+    //node mesh (performance optimized)
     gc.setLineDashes(0)
     gc.setStroke(Visualization.meshEdgeColor)
-    for (edge <- mesh.edges)
-      gc.strokeLine(X(edge.from.x), Y(edge.from.y), X(edge.to.x), Y(edge.to.y))
+    for (edge <- mesh.edges) {
+      val a_x = X(edge.from.x)
+      val a_y = Y(edge.from.y)
+      val b_x = X(edge.to.x)
+      val b_y = Y(edge.to.y)
+      if (screenRect.overlaps(Rectangle(b_x - a_x, b_y - a_y, a_x, a_y))) {
+        gc.strokeLine(a_x, a_y, b_x, b_y)
+      }
+    }
     gc.setFill(Visualization.meshNodeColor)
-    for (node <- mesh.nodes)
-      gc.fillOval(X(node.x - Visualization.meshNodeRadius), Y(node.y - Visualization.meshNodeRadius),
-        Visualization.meshNodeRadius * 2 * scaleX, Visualization.meshNodeRadius * 2 * scaleY)
+    for (node <- mesh.nodes) {
+      val center_x = X(node.x - Visualization.meshNodeRadius)
+      val center_y = Y(node.y - Visualization.meshNodeRadius)
+      val p_x = Visualization.meshNodeRadius * 2 * scaleX
+      val p_y = Visualization.meshNodeRadius * 2 * scaleY
+      if (screenRect.overlaps(Rectangle(p_x, p_y, center_x - p_x / 2, center_y - p_y / 2))) {
+        gc.fillOval(center_x, center_y, p_x, p_y)
+      }
+    }
 
-    //waypoints
+    //waypoints (performance optimized)
     val drawWaypoint = (x: Double, y: Double, radius: Double, color: Color) => {
-      gc.setFill(color)
-      gc.fillOval(X(x - radius), Y(y - radius), radius * 2 * scaleX, radius * 2 * scaleY)
+      val center_x = X(x - radius)
+      val center_y = Y(y - radius)
+      val p_x = radius * 2 * scaleX
+      val p_y = radius * 2 * scaleY
+      if (screenRect.overlaps(Rectangle(p_x, p_y, center_x - p_x / 2, center_y - p_y / 2))) {
+        gc.setFill(color)
+        gc.fillOval(center_x, center_y, p_x, p_y)
+      }
     }
 
     for (waypoint <- route.waypoints) {
@@ -118,7 +139,6 @@ class Visualization(val gc: GraphicsContext,
         else if (waypoint == route.currentWaypoint.orNull) Waypoint.colorCurrentCore
         else if (waypoint == route.nextWaypoint.orNull) Waypoint.colorNext
         else Waypoint.colorLater
-      gc.setFill(color)
       drawWaypoint(waypoint.node.pos.getX, waypoint.node.pos.getY, Visualization.meshNodeRadius, color)
     }
 

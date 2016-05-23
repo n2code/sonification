@@ -126,7 +126,7 @@
                                                 <Insets top="10.0" />
                                              </VBox.margin>
                                           </Label>
-                                          <Slider id="routeLength" blockIncrement="5.0" majorTickUnit="5.0" max="20.0" min="3.0" minorTickCount="0" showTickLabels="true" showTickMarks="true" snapToTicks="true" value="10.0">
+                                          <Slider id="routeLength" blockIncrement="5.0" majorTickUnit="5.0" max="50.0" min="5.0" minorTickCount="0" showTickLabels="true" showTickMarks="true" snapToTicks="true" value="10.0">
                                              <VBox.margin>
                                                 <Insets bottom="5.0" top="5.0" />
                                              </VBox.margin>
