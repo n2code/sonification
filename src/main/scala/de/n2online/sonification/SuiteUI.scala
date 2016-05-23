@@ -6,14 +6,14 @@ import javafx.collections.FXCollections
 import javafx.event.{ActionEvent, EventHandler}
 import javafx.fxml.FXMLLoader
 import javafx.scene.canvas.{Canvas, GraphicsContext}
-import javafx.scene.chart.{LineChart, NumberAxis, XYChart}
 import javafx.scene.chart.NumberAxis.DefaultFormatter
+import javafx.scene.chart.{AreaChart, LineChart, NumberAxis, XYChart}
 import javafx.scene.control._
 import javafx.scene.input.KeyEvent
-import javafx.scene.layout.{Pane, StackPane}
+import javafx.scene.layout.{AnchorPane, Pane}
 import javafx.scene.{Parent, Scene}
 import javafx.stage.Stage
-import javafx.util.Duration
+import javafx.util.{Callback, Duration}
 
 import de.n2online.sonification.Helpers._
 
@@ -35,6 +35,7 @@ class SuiteUI extends Application {
   private var monitor: Pane = null
   private var animation: Timeline = null
   private var anglePlot: LineChart[Number, Number] = null
+  private var distancePlot: AreaChart[Number, Number] = null
 
   def control[T](id: String) = scene.lookup("#" + id.stripPrefix("#")).asInstanceOf[T]
 
@@ -121,6 +122,7 @@ class SuiteUI extends Application {
             statusStep.setDisable(false)
             control[TitledPane]("resultsStep").setDisable(true)
             control[Accordion]("steps").setExpandedPane(statusStep)
+            control[AnchorPane]("analysisWindow").setVisible(false)
           })
         }
         case Failure(err) => Sonification.log("[ERROR] " + err.getMessage)
@@ -144,6 +146,31 @@ class SuiteUI extends Application {
         control[TitledPane]("statusStep").setDisable(true)
         blockSetupParameters(false)
       })
+    })
+
+    setButtonHandler("analysisClose", (e) => {
+      guiDo(() => {
+        control[AnchorPane]("analysisWindow").setVisible(false)
+      })
+    })
+
+    setButtonHandler("showAnalysis", (e) => {
+      guiDo(() => {
+        control[AnchorPane]("analysisWindow").setVisible(true)
+      })
+    })
+
+    control[Pagination]("analysisPage").setPageFactory(new Callback[Integer, javafx.scene.Node] {
+      override def call(index: Integer): javafx.scene.Node = {
+        Sonification.analysis match {
+          case Some(analysis) => {
+            anglePlot.getData.set(0, analysis.getAngleData(index))
+            distancePlot.getData.set(0, analysis.getDistanceData(index))
+          }
+          case _ => /* NO-OP */
+        }
+        new javafx.scene.Group()
+      }
     })
 
     control[TextField]("worldWidth").setText("800")
@@ -246,7 +273,7 @@ class SuiteUI extends Application {
                     }
                   }
                   case None => {
-                    experimentFinished()
+                    experimentFinished(exp)
                     this.stop()
                     keyboard.consumeEvents = false
                   }
@@ -301,9 +328,10 @@ class SuiteUI extends Application {
     })
   }
 
-  def experimentFinished() = {
+  def experimentFinished(exp: Experiment) = {
     Sonification.log("[INFO] Test finished.")
     stopSound()
+    doAnalysis(exp.recorder)
     guiDo(() => {
       control[TitledPane]("statusStep").setDisable(true)
       val resultsStep = control[TitledPane]("resultsStep")
@@ -317,7 +345,10 @@ class SuiteUI extends Application {
     Sonification.log("[INFO] Test interrupted.")
     stopSound()
     Sonification.experiment match {
-      case Some(exp) => exp.simulation.stop()
+      case Some(exp) => {
+        keyboard.consumeEvents = false
+        exp.simulation.stop()
+      }
       case _ => assert(false, "reset triggered but no test running")
     }
   }
@@ -338,21 +369,49 @@ class SuiteUI extends Application {
       timeAxis.setAutoRanging(true)
       timeAxis.setForceZeroInRange(false)
 
+      val probablyMaxDistance = MeshBuilder.defaultCellSize * (1 + 2 * MeshBuilder.centerVariance)
+      val distanceAxis = new NumberAxis(Waypoint.thresholdReached, probablyMaxDistance, probablyMaxDistance - Waypoint.thresholdReached)
+      distanceAxis.setTickLabelsVisible(false)
+      distancePlot = new AreaChart[Number, Number](timeAxis, distanceAxis, FXCollections.observableArrayList(new XYChart.Series[Number, Number]()))
+      distancePlot.setCreateSymbols(false)
+      distancePlot.setHorizontalGridLinesVisible(false)
+      distancePlot.setVerticalGridLinesVisible(false)
+      distancePlot.getXAxis.setVisible(false)
+      distancePlot.getYAxis.setVisible(false)
+
       val angleAxis = new NumberAxis(-180, 180, 30)
       angleAxis.setMinorTickCount(5)
       angleAxis.setTickLabelFormatter(new DefaultFormatter(angleAxis) {
         override def toString(`object`: Number): String = `object`.intValue().toString + "°"
       })
-
       anglePlot = new LineChart[Number, Number](timeAxis, angleAxis, FXCollections.observableArrayList(new XYChart.Series[Number, Number]()))
       anglePlot.setCreateSymbols(false)
+      anglePlot.setAlternativeRowFillVisible(false)
+      anglePlot.setAlternativeColumnFillVisible(false)
+      anglePlot.setStyle("-fx-background-color: transparent;")
 
       val setCommonProps = (chart: XYChart[Number, Number]) => {
         chart.setLegendVisible(false)
         chart.setAnimated(false)
+        AnchorPane.setTopAnchor(chart, 0.0)
+        AnchorPane.setLeftAnchor(chart, 0.0)
+        AnchorPane.setRightAnchor(chart, 0.0)
+        AnchorPane.setBottomAnchor(chart, 0.0)
       }
-      control[StackPane]("plotPane").getChildren.add(anglePlot)
+      setCommonProps(distancePlot)
       setCommonProps(anglePlot)
+
+      val plotPane = control[AnchorPane]("plotPane")
+      plotPane.getChildren.add(distancePlot)
+      plotPane.getChildren.add(anglePlot)
     })
+  }
+
+  def doAnalysis(recorder: PathRecorder) = {
+    val analysis = Analysis.execute(recorder)
+    val analysisPage = control[Pagination]("analysisPage")
+    analysisPage.setMaxPageIndicatorCount(1337)
+    analysisPage.setPageCount(analysis.getDataSetCount)
+    analysisPage.setCurrentPageIndex(0)
   }
 }

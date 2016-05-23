@@ -1,13 +1,11 @@
 package de.n2online.sonification
 
-import javafx.scene.chart.{LineChart, XYChart}
-
 import de.n2online.sonification.Helpers._
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D
 
 import scala.collection.mutable
 
-class PathRecorder(val anglePlot: LineChart[Number, Number]) {
+class PathRecorder() {
   private var path: mutable.MutableList[TimedPosition] = null
   private var active = false
   private var playing = false
@@ -51,9 +49,6 @@ class PathRecorder(val anglePlot: LineChart[Number, Number]) {
     posPrevious = posCurrent
 
     path += TimedPosition(posCurrent.getX, posCurrent.getY, tDelta, tTotal, agent.targetDistance, agent.targetAngle, reachedWaypoint)
-    val seriesData = anglePlot.getData.get(0).getData
-    seriesData.add(new XYChart.Data[Number, Number](tTotal / 1000.0, Math.toDegrees(agent.targetAngle)))
-    if (seriesData.size > SuiteUI.maxGraphValues) seriesData.remove(0, seriesData.size - SuiteUI.maxGraphValues - 1)
 
     reachedWaypoint match {
       case Some(waypoint) => {

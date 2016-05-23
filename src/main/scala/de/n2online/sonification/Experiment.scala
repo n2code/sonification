@@ -30,7 +30,7 @@ class Experiment(
                 ) {
   val motion = new Motion
   var simulation: AnimationTimer = null
-  val recorder = new PathRecorder(anglePlot)
+  val recorder = new PathRecorder
 
   val mesh = MeshBuilder.getRandomMesh(new Vector2D(0, 0), meshSize.width, meshSize.height, randomSource) match {
     case Success(world) => world

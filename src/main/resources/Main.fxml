@@ -5,6 +5,7 @@
 <?import javafx.scene.control.Accordion?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Pagination?>
 <?import javafx.scene.control.ProgressBar?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.Slider?>
@@ -22,7 +23,6 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.RowConstraints?>
-<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
@@ -47,6 +47,31 @@
                         <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                      </GridPane.margin>
                   </Pane>
+                  <AnchorPane id="analysisWindow" style="-fx-background-color: lightgrey;">
+                     <effect>
+                        <DropShadow />
+                     </effect>
+                     <GridPane.margin>
+                        <Insets bottom="42.0" left="42.0" right="42.0" top="42.0" />
+                     </GridPane.margin>
+                     <children>
+                        <Label alignment="CENTER" layoutX="318.0" layoutY="34.0" text="Waypoint analysis" textAlignment="CENTER" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                           <padding>
+                              <Insets top="20.0" />
+                           </padding>
+                           <font>
+                              <Font size="20.0" />
+                           </font>
+                        </Label>
+                        <Pagination id="analysisPage" layoutX="158.0" layoutY="345.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
+                        <Button id="analysisClose" cancelButton="true" layoutX="596.0" layoutY="10.0" mnemonicParsing="false" text="X" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0">
+                           <font>
+                              <Font name="System Bold" size="13.0" />
+                           </font>
+                        </Button>
+                        <AnchorPane id="plotPane" layoutX="10.0" layoutY="-38.0" AnchorPane.bottomAnchor="60.0" AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="60.0" />
+                     </children>
+                  </AnchorPane>
                   <Accordion id="steps" focusTraversable="false" GridPane.columnIndex="1">
                     <panes>
                         <TitledPane id="setupStep" disable="true" text="Setup">
@@ -101,7 +126,7 @@
                                                 <Insets top="10.0" />
                                              </VBox.margin>
                                           </Label>
-                                          <Slider id="routeLength" blockIncrement="5.0" majorTickUnit="5.0" max="20.0" min="5.0" minorTickCount="0" showTickLabels="true" showTickMarks="true" snapToTicks="true" value="10.0">
+                                          <Slider id="routeLength" blockIncrement="5.0" majorTickUnit="5.0" max="20.0" min="3.0" minorTickCount="0" showTickLabels="true" showTickMarks="true" snapToTicks="true" value="10.0">
                                              <VBox.margin>
                                                 <Insets bottom="5.0" top="5.0" />
                                              </VBox.margin>
@@ -202,14 +227,19 @@
                                  <content>
                                     <VBox alignment="TOP_CENTER">
                                        <children>
+                                          <Button id="showAnalysis" defaultButton="true" mnemonicParsing="false" text="Show analysis">
+                                             <VBox.margin>
+                                                <Insets top="10.0" />
+                                             </VBox.margin>
+                                          </Button>
                                           <Button id="restartTest" mnemonicParsing="false" text="Restart test">
                                              <VBox.margin>
-                                                <Insets top="20.0" />
+                                                <Insets top="10.0" />
                                              </VBox.margin>
                                           </Button>
                                        </children>
                                        <padding>
-                                          <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                          <Insets bottom="5.0" left="5.0" right="5.0" top="10.0" />
                                        </padding></VBox>
                                  </content>
                               </ScrollPane>
@@ -230,11 +260,7 @@
                         </TextArea>
                      </content>
                   </Tab>
-                  <Tab text="Stats">
-                    <content>
-                        <StackPane id="plotPane" />
-                    </content>
-                  </Tab>
+                  <Tab closable="false" disable="true" text="Settings" />
                </tabs>
             </TabPane>
         </items>

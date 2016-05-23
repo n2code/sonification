@@ -5,6 +5,11 @@ import org.apache.commons.math3.geometry.euclidean.twod.Vector2D
 import scala.util.{Failure, Random, Success, Try}
 
 object MeshBuilder {
+  //settings
+  val defaultCellSize = 100 //used if no number of cells per dimension is given
+  val centerVariance = 0.3 //center varied by 30% of the cells width and height
+  val pCellEmpty = 0.15 //chance that a cell contains no node
+
 
   def getRandomMesh(
                      topleft: Vector2D,
@@ -12,11 +17,6 @@ object MeshBuilder {
                      randomSource: Random,
                      cellNumX: Option[Int] = None, cellNumY: Option[Int] = None
                    ): Try[Graph] = {
-    //settings
-    val defaultCellSize = 100 //used if no number of cells per dimension is given
-    val centerVariance = 0.3 //center varied by 30% of the cells width and height
-    val pCellEmpty = 0.15 //chance that a cell contains no node
-
     //reproducable randomness
     def randomVariance: Double = {
       //random signed variance < abs(centerVariance)
