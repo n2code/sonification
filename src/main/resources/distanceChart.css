@@ -1,0 +1,6 @@
+.chart-plot-background {
+    /*-fx-background-color: lightblue;*/
+}
+.axis {
+    -fx-tick-label-font: 13 monospace;
+}

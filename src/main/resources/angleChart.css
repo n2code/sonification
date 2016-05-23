@@ -1,0 +1,9 @@
+.chart-plot-background {
+    -fx-background-color: transparent;
+}
+.default-color0.chart-series-line {
+    -fx-stroke: #3B68B0;
+}
+.axis {
+    -fx-tick-label-font: 13 monospace;
+}

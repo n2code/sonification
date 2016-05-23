@@ -5,6 +5,7 @@ import javafx.application.{Application, Platform}
 import javafx.collections.FXCollections
 import javafx.event.{ActionEvent, EventHandler}
 import javafx.fxml.FXMLLoader
+import javafx.geometry.Insets
 import javafx.scene.canvas.{Canvas, GraphicsContext}
 import javafx.scene.chart.NumberAxis.DefaultFormatter
 import javafx.scene.chart.{AreaChart, LineChart, NumberAxis, XYChart}
@@ -107,7 +108,7 @@ class SuiteUI extends Application {
 
     //charts
 
-    initCharts()
+    createCharts()
 
     //bind controls, set default values
 
@@ -360,7 +361,7 @@ class SuiteUI extends Application {
     }
   }
 
-  def initCharts() = {
+  def createCharts() = {
     guiDo(() => {
       val timeAxis = new NumberAxis()
       timeAxis.setLabel("time in seconds")
@@ -371,24 +372,27 @@ class SuiteUI extends Application {
 
       val probablyMaxDistance = MeshBuilder.defaultCellSize * (1 + 2 * MeshBuilder.centerVariance)
       val distanceAxis = new NumberAxis(Waypoint.thresholdReached, probablyMaxDistance, probablyMaxDistance - Waypoint.thresholdReached)
-      distanceAxis.setTickLabelsVisible(false)
+      distanceAxis.setMinorTickCount(0)
+      distanceAxis.setTickLabelFormatter(new DefaultFormatter(distanceAxis) {
+        override def toString(n: Number) = ""
+      })
       distancePlot = new AreaChart[Number, Number](timeAxis, distanceAxis, FXCollections.observableArrayList(new XYChart.Series[Number, Number]()))
       distancePlot.setCreateSymbols(false)
       distancePlot.setHorizontalGridLinesVisible(false)
       distancePlot.setVerticalGridLinesVisible(false)
-      distancePlot.getXAxis.setVisible(false)
-      distancePlot.getYAxis.setVisible(false)
+      distancePlot.getStylesheets.addAll(getClass.getResource("/distanceChart.css").toExternalForm)
+      distancePlot.setPadding(new Insets(5, 5, 5, 13))
 
       val angleAxis = new NumberAxis(-180, 180, 30)
       angleAxis.setMinorTickCount(5)
       angleAxis.setTickLabelFormatter(new DefaultFormatter(angleAxis) {
-        override def toString(`object`: Number): String = `object`.intValue().toString + "°"
+        override def toString(n: Number) = f"${n.intValue}%4s°"
       })
       anglePlot = new LineChart[Number, Number](timeAxis, angleAxis, FXCollections.observableArrayList(new XYChart.Series[Number, Number]()))
       anglePlot.setCreateSymbols(false)
       anglePlot.setAlternativeRowFillVisible(false)
       anglePlot.setAlternativeColumnFillVisible(false)
-      anglePlot.setStyle("-fx-background-color: transparent;")
+      anglePlot.getStylesheets.addAll(getClass.getResource("/angleChart.css").toExternalForm)
 
       val setCommonProps = (chart: XYChart[Number, Number]) => {
         chart.setLegendVisible(false)
