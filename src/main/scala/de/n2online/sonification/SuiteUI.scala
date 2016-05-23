@@ -56,6 +56,8 @@ class SuiteUI extends Application {
     stage.setTitle("Sonification-Suite")
     scene = new Scene(root)
     stage.setScene(scene)
+    stage.setMinWidth(1024)
+    stage.setMinHeight(700)
     stage.show
     Sonification.gui = this
 
@@ -78,7 +80,7 @@ class SuiteUI extends Application {
       override def handle(evt: KeyEvent): Unit = keyboard.registerKeyUp(evt)
     })
 
-    //animation is always running :)
+    //animation
 
     animation = new Timeline(new KeyFrame(Duration.millis(1000 / Visualization.FPS), new EventHandler[ActionEvent] {
       override def handle(t: ActionEvent): Unit = {
@@ -89,7 +91,6 @@ class SuiteUI extends Application {
       }
     }))
     animation.setCycleCount(Animation.INDEFINITE)
-    animation.play()
 
     //sound server
 
@@ -275,8 +276,7 @@ class SuiteUI extends Application {
                   }
                   case None => {
                     experimentFinished(exp)
-                    this.stop()
-                    keyboard.consumeEvents = false
+                    stopRunning(exp.simulation)
                   }
                 }
 
@@ -294,8 +294,7 @@ class SuiteUI extends Application {
           case Success(benchmark) => {
             Sonification.log(s"[ENGINE] Sound generator initialized in $benchmark ms")
             exp.recorder.start(exp.agent.pos)
-            keyboard.consumeEvents = true
-            exp.simulation.start()
+            startRunning(exp.simulation)
           }
           case Failure(ex) => Sonification.log("[ERROR] Sound generator init failed")
         }
@@ -347,8 +346,7 @@ class SuiteUI extends Application {
     stopSound()
     Sonification.experiment match {
       case Some(exp) => {
-        keyboard.consumeEvents = false
-        exp.simulation.stop()
+        stopRunning(exp.simulation)
       }
       case _ => assert(false, "reset triggered but no test running")
     }
@@ -417,5 +415,17 @@ class SuiteUI extends Application {
     analysisPage.setMaxPageIndicatorCount(1337)
     analysisPage.setPageCount(analysis.getDataSetCount)
     analysisPage.setCurrentPageIndex(0)
+  }
+
+  def startRunning(sim: AnimationTimer) = {
+    animation.play()
+    keyboard.consumeEvents = true
+    sim.start()
+  }
+
+  def stopRunning(sim: AnimationTimer) = {
+    sim.stop()
+    keyboard.consumeEvents = false
+    animation.pause()
   }
 }
