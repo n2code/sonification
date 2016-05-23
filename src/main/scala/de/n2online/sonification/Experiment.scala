@@ -1,15 +1,21 @@
 package de.n2online.sonification
 
 import javafx.animation.AnimationTimer
+import javafx.scene.chart.{LineChart, XYChart}
 
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D
 
 import scala.util.{Failure, Random, Success, Try}
 
 object Experiment {
-  def build(worldSize: Rectangle, routeLength: Int, randomSource: Random): Try[Experiment] = {
+  def build(
+             worldSize: Rectangle,
+             routeLength: Int,
+             randomSource: Random,
+             anglePlot: LineChart[Number, Number]
+           ): Try[Experiment] = {
     try {
-      Success(new Experiment(worldSize, routeLength, randomSource))
+      Success(new Experiment(worldSize, routeLength, randomSource, anglePlot))
     } catch {
       case err: Throwable => Failure(err)
     }
@@ -19,10 +25,12 @@ object Experiment {
 class Experiment(
                   val meshSize: Rectangle,
                   val nodesWanted: Int,
-                  val randomSource: Random
+                  val randomSource: Random,
+                  anglePlot: LineChart[Number, Number]
                 ) {
   val motion = new Motion
   var simulation: AnimationTimer = null
+  val recorder = new PathRecorder(anglePlot)
 
   val mesh = MeshBuilder.getRandomMesh(new Vector2D(0, 0), meshSize.width, meshSize.height, randomSource) match {
     case Success(world) => world

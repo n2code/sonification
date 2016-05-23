@@ -1,16 +1,19 @@
 package de.n2online.sonification
 
+import javafx.scene.chart.{LineChart, XYChart}
+
 import de.n2online.sonification.Helpers._
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D
 
 import scala.collection.mutable
 
-class PathRecorder {
+class PathRecorder(val anglePlot: LineChart[Number, Number]) {
   private var path: mutable.MutableList[TimedPosition] = null
   private var active = false
   private var playing = false
   private var tUpdated: Long = 0
   private var tWaypointTackled: Long = 0
+  private var tTotal: Long = 0
   private var posTargetAcquired = Vector2D.NaN
   private var posPrevious = Vector2D.NaN
   private var accDistance: Double = 0
@@ -19,6 +22,7 @@ class PathRecorder {
   def reset() = {
     active = false
     path = new mutable.MutableList[TimedPosition]
+    tTotal = 0
   }
 
   def start(pos: Vector2D) = {
@@ -34,17 +38,20 @@ class PathRecorder {
     this
   }
 
-  def update(posCurrent: Vector2D, reachedWaypoint: Option[Waypoint]) = {
+  def update(agent: Agent, reachedWaypoint: Option[Waypoint]) = {
     assert(active && playing, "Updating path recorder which is not active&&playing")
+    val posCurrent = agent.pos
 
     val tNow = systemTimeInMilliseconds
     val tDelta = tNow - tUpdated
     tUpdated = tNow
+    tTotal += tDelta
 
     accDistance += posCurrent.distance(posPrevious)
     posPrevious = posCurrent
 
-    path += TimedPosition(posCurrent.getX, posCurrent.getY, tDelta, reachedWaypoint)
+    path += TimedPosition(posCurrent.getX, posCurrent.getY, tDelta, tTotal, agent.targetDistance, agent.targetAngle, reachedWaypoint)
+    anglePlot.getData.get(0).getData.add(new XYChart.Data[Number, Number](tTotal / 1000.0, Math.toDegrees(agent.targetAngle)))
 
     reachedWaypoint match {
       case Some(waypoint) => {

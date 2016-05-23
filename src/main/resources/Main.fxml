@@ -9,6 +9,8 @@
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.Slider?>
 <?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.TitledPane?>
@@ -20,6 +22,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
@@ -216,11 +219,24 @@
                   </Accordion>
                </children>
             </GridPane>
-            <TextArea id="log" editable="false" minHeight="30.0" prefHeight="100.0" wrapText="true">
-               <font>
-                  <Font name="Monospaced Regular" size="13.0" />
-               </font>
-            </TextArea>
+            <TabPane side="LEFT" tabClosingPolicy="UNAVAILABLE">
+               <tabs>
+                  <Tab closable="false" text="Log">
+                     <content>
+                        <TextArea id="log" editable="false" minHeight="30.0" prefHeight="100.0" text="Welcome to the SuperCollider-Sonification-Suite!" wrapText="true">
+                           <font>
+                              <Font name="Monospaced Regular" size="13.0" />
+                           </font>
+                        </TextArea>
+                     </content>
+                  </Tab>
+                  <Tab text="Stats">
+                    <content>
+                        <StackPane id="plotPane" />
+                    </content>
+                  </Tab>
+               </tabs>
+            </TabPane>
         </items>
          <effect>
             <DropShadow />

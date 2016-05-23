@@ -48,8 +48,12 @@ class Visualization(val gc: GraphicsContext,
     gc.fillRect(0, 0, screen.getWidth, screen.getHeight)
   }
 
-  def paint(agent: Agent, route: Route, mesh: Graph) {
+  def paint(experiment: Experiment) {
     val screen: Canvas = gc.getCanvas
+    val agent = experiment.agent
+    val route = experiment.route
+    val mesh = experiment.mesh
+    val recorder = experiment.recorder
 
     /***** fancy view modifiers *****/
 
@@ -119,7 +123,7 @@ class Visualization(val gc: GraphicsContext,
     }
 
     //agents path
-    val path = agent.recorder.getPath
+    val path = recorder.getPath
 
     gc.setLineDashes(Visualization.agentPathDashes)
     gc.setStroke(Visualization.agentPathColor)

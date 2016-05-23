@@ -2,12 +2,15 @@ package de.n2online.sonification
 
 import javafx.animation.{Animation, AnimationTimer, KeyFrame, Timeline}
 import javafx.application.{Application, Platform}
+import javafx.collections.FXCollections
 import javafx.event.{ActionEvent, EventHandler}
 import javafx.fxml.FXMLLoader
 import javafx.scene.canvas.{Canvas, GraphicsContext}
+import javafx.scene.chart.{LineChart, NumberAxis, XYChart}
+import javafx.scene.chart.NumberAxis.DefaultFormatter
 import javafx.scene.control._
 import javafx.scene.input.KeyEvent
-import javafx.scene.layout.Pane
+import javafx.scene.layout.{Pane, StackPane}
 import javafx.scene.{Parent, Scene}
 import javafx.stage.Stage
 import javafx.util.Duration
@@ -30,6 +33,7 @@ class SuiteUI extends Application {
   private var viz: Visualization = null
   private var monitor: Pane = null
   private var animation: Timeline = null
+  private var anglePlot: LineChart[Number, Number] = null
 
   def control[T](id: String) = scene.lookup("#" + id.stripPrefix("#")).asInstanceOf[T]
 
@@ -76,7 +80,7 @@ class SuiteUI extends Application {
     animation = new Timeline(new KeyFrame(Duration.millis(1000 / Visualization.FPS), new EventHandler[ActionEvent] {
       override def handle(t: ActionEvent): Unit = {
         Sonification.experiment match {
-          case Some(exp) => viz.paint(exp.agent, exp.route, exp.mesh)
+          case Some(exp) => viz.paint(exp)
           case _ => viz.paintStandbyScreen()
         }
       }
@@ -86,10 +90,10 @@ class SuiteUI extends Application {
 
     //sound server
 
-    Sonification.log("[ENGINE] Booting SuperCollider server...")
+    Sonification.log("[ENGINE] Booting sound server...")
     startSoundServer().onComplete {
       case Success(srv) => {
-        Sonification.log("[ENGINE] scsynth booted and connection established.")
+        Sonification.log("[ENGINE] scsynth booted (see stdout for details), connection established")
         guiDo(() => {
           val setupStep = control[TitledPane]("setupStep")
           setupStep.setDisable(false)
@@ -98,6 +102,10 @@ class SuiteUI extends Application {
       }
       case Failure(err) => Sonification.log("[CRITICAL] Booting server failed: " + err.getMessage)
     }
+
+    //charts
+
+    initCharts()
 
     //bind controls, set default values
 
@@ -178,7 +186,7 @@ class SuiteUI extends Application {
         val routeLength = control[Slider]("routeLength").getValue.toInt
 
         Sonification.log(s"[INFO] New test: $routeLength node route on $worldSize with seed " + "\"" + textSeed + "\"")
-        val exp = Experiment.build(worldSize, routeLength, rnd) match {
+        val exp = Experiment.build(worldSize, routeLength, rnd, anglePlot) match {
           case Success(scenario) => scenario
           case Failure(err) => return Failure(err)
         }
@@ -213,22 +221,25 @@ class SuiteUI extends Application {
 
                 exp.route.currentWaypoint match {
                   case Some(target) => {
-                    exp.motion.handle(partial, keyboard, exp.agent, exp.route)
+                    //moving and updating stats
+                    exp.motion.handle(partial, keyboard, exp)
+
+                    //adjusting sound
                     Sonification.sound match {
                       case Some(sound) => {
                         if (sound.getGenerator.isDefined) {
-                          val dist = target.node.pos.distance(exp.agent.pos)
-                          val angle = target.getAngleCorrection(exp.agent)
-                          sound.getGenerator.get.update(dist, angle)
+                          sound.getGenerator.get.update(exp.agent.targetDistance, exp.agent.targetAngle)
                         }
                       }
                       case _ => Sonification.log("[ERROR] Sound dead?")
                     }
+
+                    //logging if necessary
                     if (reducedUpdateSum > 100) {
                       val prog = exp.route.visited.length.toDouble / exp.route.waypoints.length
-                      val dist = f"${target.node.pos.distance(exp.agent.pos).toInt}%3s"
-                      val ang = f"${Math.toDegrees(target.getAngleCorrection(exp.agent)).toInt}%3s°"
-                      val capinfo = exp.agent.recorder.getPath.length + " records"
+                      val dist = f"${exp.agent.targetDistance.toInt}%3s"
+                      val ang = f"${Math.toDegrees(exp.agent.targetAngle).toInt}%3s°"
+                      val capinfo = exp.recorder.getPath.length + " records"
                       guiDo(() => updateStatus(prog, dist, ang, capinfo))
                       reducedUpdateSum = 0
                     }
@@ -253,7 +264,7 @@ class SuiteUI extends Application {
         generatorReady.onComplete {
           case Success(benchmark) => {
             Sonification.log(s"[ENGINE] Sound generator initialized in $benchmark ms")
-            exp.agent.recorder.start(exp.agent.pos)
+            exp.recorder.start(exp.agent.pos)
             keyboard.consumeEvents = true
             exp.simulation.start()
           }
@@ -315,5 +326,30 @@ class SuiteUI extends Application {
       case Some(sman) => sman.freeAll()
       case _ => assert(false, "sound kill triggered but no sound active")
     }
+  }
+
+  def initCharts() = {
+    guiDo(() => {
+      val timeAxis = new NumberAxis()
+      timeAxis.setLabel("time in seconds")
+      timeAxis.setTickUnit(10)
+      timeAxis.setMinorTickCount(9)
+
+      val angleAxis = new NumberAxis(-180, 180, 30)
+      angleAxis.setMinorTickCount(5)
+      angleAxis.setTickLabelFormatter(new DefaultFormatter(angleAxis) {
+        override def toString(`object`: Number): String = `object`.intValue().toString + "°"
+      })
+
+      anglePlot = new LineChart[Number, Number](timeAxis, angleAxis, FXCollections.observableArrayList(new XYChart.Series[Number, Number]()))
+      anglePlot.setCreateSymbols(false)
+
+      val setCommonProps = (chart: XYChart[Number, Number]) => {
+        chart.setLegendVisible(false)
+        chart.setAnimated(false)
+      }
+      control[StackPane]("plotPane").getChildren.add(anglePlot)
+      setCommonProps(anglePlot)
+    })
   }
 }
