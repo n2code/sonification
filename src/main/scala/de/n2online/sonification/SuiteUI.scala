@@ -22,6 +22,7 @@ import scala.util.{Failure, Random, Success, Try}
 
 object SuiteUI {
   private val seedExamples = Array("sonification", "supercollider", "frequency", "amplitude", "phase", "noise", "sine", "sawtooth", "pulse", "envelope", "decay", "reverb", "midi", "opensoundcontrol")
+  val maxGraphValues: Int = 200
 }
 
 class SuiteUI extends Application {
@@ -334,6 +335,8 @@ class SuiteUI extends Application {
       timeAxis.setLabel("time in seconds")
       timeAxis.setTickUnit(10)
       timeAxis.setMinorTickCount(9)
+      timeAxis.setAutoRanging(true)
+      timeAxis.setForceZeroInRange(false)
 
       val angleAxis = new NumberAxis(-180, 180, 30)
       angleAxis.setMinorTickCount(5)

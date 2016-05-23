@@ -51,7 +51,9 @@ class PathRecorder(val anglePlot: LineChart[Number, Number]) {
     posPrevious = posCurrent
 
     path += TimedPosition(posCurrent.getX, posCurrent.getY, tDelta, tTotal, agent.targetDistance, agent.targetAngle, reachedWaypoint)
-    anglePlot.getData.get(0).getData.add(new XYChart.Data[Number, Number](tTotal / 1000.0, Math.toDegrees(agent.targetAngle)))
+    val seriesData = anglePlot.getData.get(0).getData
+    seriesData.add(new XYChart.Data[Number, Number](tTotal / 1000.0, Math.toDegrees(agent.targetAngle)))
+    if (seriesData.size > SuiteUI.maxGraphValues) seriesData.remove(0, seriesData.size - SuiteUI.maxGraphValues - 1)
 
     reachedWaypoint match {
       case Some(waypoint) => {
