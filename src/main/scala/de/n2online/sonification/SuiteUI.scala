@@ -1,5 +1,6 @@
 package de.n2online.sonification
 
+import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 import javafx.animation.{Animation, AnimationTimer, KeyFrame, Timeline}
@@ -15,7 +16,7 @@ import javafx.scene.control._
 import javafx.scene.input.KeyEvent
 import javafx.scene.layout.{AnchorPane, Pane}
 import javafx.scene.{Parent, Scene}
-import javafx.stage.Stage
+import javafx.stage.{FileChooser, Stage}
 import javafx.util.{Callback, Duration}
 
 import de.n2online.sonification.Helpers._
@@ -39,6 +40,7 @@ class SuiteUI extends Application {
   private var animation: Timeline = null
   private var anglePlot: LineChart[Number, Number] = null
   private var distancePlot: AreaChart[Number, Number] = null
+  private var experimentRunning = false
 
   def control[T](id: String) = scene.lookup("#" + id.stripPrefix("#")).asInstanceOf[T]
 
@@ -109,9 +111,10 @@ class SuiteUI extends Application {
       case Failure(err) => Sonification.log("[CRITICAL] Booting server failed: " + err.getMessage)
     }
 
-    //charts
+    //programmatically created controls
 
     createCharts()
+    val fileChooser = new FileChooser
 
     //bind controls, set default values
 
@@ -119,6 +122,7 @@ class SuiteUI extends Application {
       startExperiment() match {
         case Success(exp) => {
           Sonification.experiment = Some(exp)
+          experimentRunning = true
 
           guiDo(() => {
             blockSetupParameters(true)
@@ -174,11 +178,39 @@ class SuiteUI extends Application {
             "_" + exp.route.waypoints.length.toString + "n" +
             ".analysis"
           Analysis.saveToFile(analysis, filename) match {
-            case Success(_) => Sonification.log("[INFO] Analysis saved to \"" + filename + "\"")
+            case Success(_) => {
+              control[Button]("saveAnalysis").setDisable(true)
+              Sonification.log("[INFO] Analysis saved to \"" + filename + "\"")
+            }
             case Failure(err) => Sonification.log("[ERROR] Saving file failed: " + err.getMessage)
           }
         case _ => Sonification.log("[ERROR] Saving failed, experiment or analysis missing")
       }
+    })
+
+    setButtonHandler("loadAnalysis", (e) => {
+      experimentRunning match {
+        case true => {
+          Sonification.log("[WARNING] Cannot load archived analysis while experiment is running.")
+        }
+        case false => {
+          fileChooser.showOpenDialog(stage) match {
+            case null => Sonification.log("[WARNING] No file selected.")
+            case file: File => Analysis.loadFromFile(file.getAbsolutePath) match {
+              case Success(analysis) =>
+                loadAnalysisIntoGui(analysis)
+                guiDo(() => {
+                  control[TitledPane]("resultsStep").setDisable(true)
+                  control[AnchorPane]("analysisWindow").setVisible(true)
+                  viz.paintStandbyScreen()
+                })
+              case Failure(err) => Sonification.log("[ERROR] Loading archived analysis failed: " + err.getMessage)
+            }
+          }
+
+        }
+      }
+      focusTab(0)
     })
 
     control[Pagination]("analysisPage").setPageFactory(new Callback[Integer, javafx.scene.Node] {
@@ -349,14 +381,16 @@ class SuiteUI extends Application {
   def experimentFinished(exp: Experiment) = {
     Sonification.log("[INFO] Test finished.")
     stopSound()
-    loadAnalysis(Analysis.execute(exp.recorder))
+    loadAnalysisIntoGui(Analysis.execute(exp.recorder))
     guiDo(() => {
       control[TitledPane]("statusStep").setDisable(true)
       val resultsStep = control[TitledPane]("resultsStep")
       resultsStep.setDisable(false)
+      control[Button]("saveAnalysis").setDisable(false)
       control[Accordion]("steps").setExpandedPane(resultsStep)
       blockSetupParameters(false)
     })
+    experimentRunning = false
   }
 
   def resetExperiment() = {
@@ -368,6 +402,7 @@ class SuiteUI extends Application {
       }
       case _ => assert(false, "reset triggered but no test running")
     }
+    experimentRunning = false
   }
 
   def stopSound() = {
@@ -427,7 +462,7 @@ class SuiteUI extends Application {
     })
   }
 
-  def loadAnalysis(analysis: Analysis) = {
+  def loadAnalysisIntoGui(analysis: Analysis) = {
     val analysisPage = control[Pagination]("analysisPage")
     analysisPage.setMaxPageIndicatorCount(1337)
     analysisPage.setPageCount(analysis.getDataSetCount)
@@ -444,5 +479,9 @@ class SuiteUI extends Application {
     sim.stop()
     keyboard.consumeEvents = false
     animation.pause()
+  }
+
+  def focusTab(index: Int) = {
+    guiDo(() => control[TabPane]("tabs").getSelectionModel.select(index))
   }
 }

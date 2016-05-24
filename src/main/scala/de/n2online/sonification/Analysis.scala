@@ -40,6 +40,8 @@ object Analysis {
       val restored = new Analysis
       val archived = Files.readAllBytes(Paths.get(path)).unpickle[AnalysisData]
       restored.importData(archived)
+      Sonification.analysis = Some(restored)
+      Sonification.log(s"[INFO] Loaded archived analysis with ${restored.getDataSetCount} waypoint plots.")
       Success(restored)
     } catch {
       case _: Throwable => Failure(new RuntimeException("Loading saved analysis failed"))
