@@ -10,6 +10,7 @@ object Visualization {
   private final val meshNodeColor = Color.GREY
   private final val meshEdgeColor = Color.LIGHTGREY
   private final val backgroundColor = Color.WHITE
+  private final val standbyColor = Color.GREY
   private final val agentPathDashes = 5.0
   private final val agentPathColor = Color.DARKBLUE
   private final val agentZoomSquareSize = 200
@@ -44,7 +45,7 @@ class Visualization(val gc: GraphicsContext,
 
   def paintStandbyScreen() {
     val screen: Canvas = gc.getCanvas
-    gc.setFill(Visualization.backgroundColor)
+    gc.setFill(Visualization.standbyColor)
     gc.fillRect(0, 0, screen.getWidth, screen.getHeight)
   }
 
