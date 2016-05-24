@@ -79,7 +79,9 @@ class Visualization(val gc: GraphicsContext,
 
     /***** DRAWING ****/
 
-    val screenRect = Rectangle(screen.getWidth, screen.getHeight, 0, 0)
+    //calculating rotated screen rectangle as maximum drawing scope
+    val hypo = Math.sqrt(Math.pow(screen.getWidth, 2) * Math.pow(screen.getHeight, 2))
+    val performanceRect = Rectangle(2 * hypo , 2 * hypo, screen.getWidth / 2 - hypo, screen.getHeight / 2 - hypo)
 
     //background
     gc.setFill(Visualization.backgroundColor)
@@ -101,7 +103,7 @@ class Visualization(val gc: GraphicsContext,
       val a_y = Y(edge.from.y)
       val b_x = X(edge.to.x)
       val b_y = Y(edge.to.y)
-      if (screenRect.overlaps(Rectangle(b_x - a_x, b_y - a_y, a_x, a_y))) {
+      if (performanceRect.overlaps(Rectangle(b_x - a_x, b_y - a_y, a_x, a_y))) {
         gc.strokeLine(a_x, a_y, b_x, b_y)
       }
     }
@@ -111,7 +113,7 @@ class Visualization(val gc: GraphicsContext,
       val center_y = Y(node.y - Visualization.meshNodeRadius)
       val p_x = Visualization.meshNodeRadius * 2 * scaleX
       val p_y = Visualization.meshNodeRadius * 2 * scaleY
-      if (screenRect.overlaps(Rectangle(p_x, p_y, center_x - p_x / 2, center_y - p_y / 2))) {
+      if (performanceRect.overlaps(Rectangle(p_x, p_y, center_x - p_x / 2, center_y - p_y / 2))) {
         gc.fillOval(center_x, center_y, p_x, p_y)
       }
     }
@@ -122,7 +124,7 @@ class Visualization(val gc: GraphicsContext,
       val center_y = Y(y - radius)
       val p_x = radius * 2 * scaleX
       val p_y = radius * 2 * scaleY
-      if (screenRect.overlaps(Rectangle(p_x, p_y, center_x - p_x / 2, center_y - p_y / 2))) {
+      if (performanceRect.overlaps(Rectangle(p_x, p_y, center_x - p_x / 2, center_y - p_y / 2))) {
         gc.setFill(color)
         gc.fillOval(center_x, center_y, p_x, p_y)
       }
