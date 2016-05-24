@@ -5,7 +5,7 @@ import org.apache.commons.math3.geometry.euclidean.twod.Vector2D
 
 import scala.collection.mutable
 
-class PathRecorder() {
+class PathRecorder() extends Serializable {
   private var path: mutable.MutableList[TimedPosition] = null
   private var active = false
   private var playing = false

@@ -11,11 +11,11 @@ object Experiment {
   def build(
              worldSize: Rectangle,
              routeLength: Int,
-             randomSource: Random,
+             textSeed: String,
              anglePlot: LineChart[Number, Number]
            ): Try[Experiment] = {
     try {
-      Success(new Experiment(worldSize, routeLength, randomSource, anglePlot))
+      Success(new Experiment(worldSize, routeLength, textSeed, anglePlot))
     } catch {
       case err: Throwable => Failure(err)
     }
@@ -25,12 +25,13 @@ object Experiment {
 class Experiment(
                   val meshSize: Rectangle,
                   val nodesWanted: Int,
-                  val randomSource: Random,
+                  val textSeed: String,
                   anglePlot: LineChart[Number, Number]
                 ) {
   val motion = new Motion
   var simulation: AnimationTimer = null
   val recorder = new PathRecorder
+  private val randomSource = new Random(textSeed.hashCode)
 
   val mesh = MeshBuilder.getRandomMesh(new Vector2D(0, 0), meshSize.width, meshSize.height, randomSource) match {
     case Success(world) => world

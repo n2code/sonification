@@ -227,14 +227,22 @@
                                  <content>
                                     <VBox alignment="TOP_CENTER">
                                        <children>
-                                          <Button id="showAnalysis" defaultButton="true" mnemonicParsing="false" text="Show analysis">
+                                          <TitledPane animated="false" collapsible="false" text="Analysis">
+                                             <content>
+                                                <HBox spacing="10.0">
+                                                   <children>
+                                                      <Button id="showAnalysis" defaultButton="true" mnemonicParsing="false" text="Show charts" />
+                                                      <Button id="saveAnalysis" mnemonicParsing="false" text="Save to file" />
+                                                   </children>
+                                                </HBox>
+                                             </content>
                                              <VBox.margin>
                                                 <Insets top="10.0" />
                                              </VBox.margin>
-                                          </Button>
+                                          </TitledPane>
                                           <Button id="restartTest" mnemonicParsing="false" text="Restart test">
                                              <VBox.margin>
-                                                <Insets top="10.0" />
+                                                <Insets top="30.0" />
                                              </VBox.margin>
                                           </Button>
                                        </children>

@@ -1,5 +1,7 @@
 package de.n2online.sonification
 
+import java.text.SimpleDateFormat
+import java.util.Date
 import javafx.animation.{Animation, AnimationTimer, KeyFrame, Timeline}
 import javafx.application.{Application, Platform}
 import javafx.collections.FXCollections
@@ -162,6 +164,23 @@ class SuiteUI extends Application {
       })
     })
 
+    setButtonHandler("saveAnalysis", (e) => {
+      (Sonification.experiment, Sonification.analysis) match {
+        case (Some(exp), Some(analysis)) =>
+          val filename =
+            new SimpleDateFormat("yyyyMMdd-HHmmss").format(new Date) +
+            "_" + exp.textSeed +
+            "_" + exp.meshSize.toString +
+            "_" + exp.route.waypoints.length.toString + "n" +
+            ".analysis"
+          Analysis.saveToFile(analysis, filename) match {
+            case Success(_) => Sonification.log("[INFO] Analysis saved to \"" + filename + "\"")
+            case Failure(err) => Sonification.log("[ERROR] Saving file failed: " + err.getMessage)
+          }
+        case _ => Sonification.log("[ERROR] Saving failed, experiment or analysis missing")
+      }
+    })
+
     control[Pagination]("analysisPage").setPageFactory(new Callback[Integer, javafx.scene.Node] {
       override def call(index: Integer): javafx.scene.Node = {
         Sonification.analysis match {
@@ -211,12 +230,11 @@ class SuiteUI extends Application {
         }
 
         val textSeed = control[TextField]("seed").getText
-        val rnd = new Random(textSeed.hashCode)
 
         val routeLength = control[Slider]("routeLength").getValue.toInt
 
         Sonification.log(s"[INFO] New test: $routeLength node route on $worldSize with seed " + "\"" + textSeed + "\"")
-        val exp = Experiment.build(worldSize, routeLength, rnd, anglePlot) match {
+        val exp = Experiment.build(worldSize, routeLength, textSeed, anglePlot) match {
           case Success(scenario) => scenario
           case Failure(err) => return Failure(err)
         }
@@ -331,7 +349,7 @@ class SuiteUI extends Application {
   def experimentFinished(exp: Experiment) = {
     Sonification.log("[INFO] Test finished.")
     stopSound()
-    doAnalysis(exp.recorder)
+    loadAnalysis(Analysis.execute(exp.recorder))
     guiDo(() => {
       control[TitledPane]("statusStep").setDisable(true)
       val resultsStep = control[TitledPane]("resultsStep")
@@ -409,8 +427,7 @@ class SuiteUI extends Application {
     })
   }
 
-  def doAnalysis(recorder: PathRecorder) = {
-    val analysis = Analysis.execute(recorder)
+  def loadAnalysis(analysis: Analysis) = {
     val analysisPage = control[Pagination]("analysisPage")
     analysisPage.setMaxPageIndicatorCount(1337)
     analysisPage.setPageCount(analysis.getDataSetCount)
