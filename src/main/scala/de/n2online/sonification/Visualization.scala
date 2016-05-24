@@ -19,12 +19,10 @@ object Visualization {
   final val FPS = 30
 }
 
-class Visualization(val gc: GraphicsContext,
-                    val meshWidth: Double, val meshHeight: Double) {
-  var viewport = Rectangle(meshWidth, meshHeight)
+class Visualization(val gc: GraphicsContext, val worldSize: Rectangle) {
   final val scaleProportional = true
-  var zoomInOnAgent = true
-  var rotateWithAgent = true
+  var zoomInOnAgent = false
+  var rotateWithAgent = false
 
   private def drawCenteredImage(
                                  image: Image,
@@ -58,8 +56,9 @@ class Visualization(val gc: GraphicsContext,
 
     /***** fancy view modifiers *****/
 
-    if (zoomInOnAgent) {
-      viewport = Rectangle(Visualization.agentZoomSquareSize, Visualization.agentZoomSquareSize,
+    val viewport = zoomInOnAgent match {
+      case false => Rectangle(worldSize.width, worldSize.height)
+      case true => Rectangle(Visualization.agentZoomSquareSize, Visualization.agentZoomSquareSize,
         agent.pos.getX - Visualization.agentZoomSquareSize / 2, agent.pos.getY - Visualization.agentZoomSquareSize / 2)
     }
 
@@ -115,7 +114,7 @@ class Visualization(val gc: GraphicsContext,
       val p_x = Visualization.meshNodeRadius * 2 * scaleX
       val p_y = Visualization.meshNodeRadius * 2 * scaleY
       if (performanceRect.overlaps(Rectangle(p_x, p_y, center_x - p_x / 2, center_y - p_y / 2))) {
-        gc.fillOval(center_x, center_y, p_x, p_y)
+        gc.fillOval(center_x, center_y, p_x - 2, p_y - 2)
       }
     }
 

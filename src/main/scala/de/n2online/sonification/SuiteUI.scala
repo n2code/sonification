@@ -72,7 +72,7 @@ class SuiteUI extends Application {
     screen.widthProperty.bind(monitor.widthProperty)
     screen.heightProperty.bind(monitor.heightProperty)
     gc = screen.getGraphicsContext2D
-    viz = new Visualization(gc, screen.getWidth, screen.getHeight)
+    viz = new Visualization(gc, Rectangle(screen.getWidth, screen.getHeight))
 
     //handling movement and input
 
@@ -277,8 +277,7 @@ class SuiteUI extends Application {
 
         //graphics
 
-        viz = new Visualization(gc, monitor.getWidth, monitor.getHeight)
-        viz.viewport = Rectangle(worldSize.width, worldSize.height, 0, 0)
+        viz = new Visualization(gc, worldSize)
 
         //calculation (simulation & sound updates) :
 
@@ -320,7 +319,11 @@ class SuiteUI extends Application {
                       val dist = f"${exp.agent.targetDistance.toInt}%3s"
                       val ang = f"${Math.toDegrees(exp.agent.targetAngle).toInt}%3s°"
                       val capinfo = exp.recorder.getPath.length + " records"
-                      guiDo(() => updateStatus(prog, dist, ang, capinfo))
+                      guiDo(() => {
+                        viz.zoomInOnAgent = control[CheckBox]("agentView").selectedProperty().getValue
+                        viz.rotateWithAgent = control[CheckBox]("rotateAgent").selectedProperty().getValue
+                        updateStatus(prog, dist, ang, capinfo)
+                      })
                       reducedUpdateSum = 0
                     }
                   }
