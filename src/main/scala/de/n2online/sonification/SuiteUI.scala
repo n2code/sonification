@@ -3,7 +3,7 @@ package de.n2online.sonification
 import java.io.File
 import javafx.animation.{Animation, AnimationTimer, KeyFrame, Timeline}
 import javafx.application.{Application, Platform}
-import javafx.collections.FXCollections
+import javafx.collections.{FXCollections, ObservableList}
 import javafx.embed.swing.SwingFXUtils
 import javafx.event.{ActionEvent, EventHandler}
 import javafx.fxml.FXMLLoader
@@ -24,6 +24,7 @@ import de.n2online.sonification.Helpers._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Failure, Random, Success, Try}
+import collection.JavaConversions._
 
 object SuiteUI {
   private val seedExamples = Array("sonification", "supercollider", "frequency", "amplitude", "phase", "noise", "sine", "sawtooth", "pulse", "envelope", "decay", "reverb", "midi", "opensoundcontrol")
@@ -236,6 +237,11 @@ class SuiteUI extends Application {
     control[TextField]("worldWidth").setText("800")
     control[TextField]("worldHeight").setText("400")
     control[Slider]("routeLength").setValue(10)
+    control[ChoiceBox[String]]("generatorChoice").setItems(FXCollections.observableArrayList(
+      "PanningScale",
+      "ProximitySaws"
+    ))
+    control[ChoiceBox[String]]("generatorChoice").getSelectionModel.select(0)
   }
 
   def setButtonHandler(buttonId: String, handler: (ActionEvent) => Unit) = {
@@ -280,7 +286,11 @@ class SuiteUI extends Application {
 
         //sound
 
-        val generatorReady = sman.setGenerator(new generators.PanningScale)
+        val generatorReady = sman.setGenerator(control[ChoiceBox[String]]("generatorChoice").getValue match {
+          case "PanningScale" => new generators.PanningScale
+          case "ProximitySaws" => new generators.ProximitySaws
+          case _ => return Failure(new IllegalArgumentException("No sound generator selected"))
+        })
 
         //graphics
 
@@ -380,6 +390,7 @@ class SuiteUI extends Application {
     control[TextField]("worldWidth").setDisable(blocked)
     control[TextField]("worldHeight").setDisable(blocked)
     control[Slider]("routeLength").setDisable(blocked)
+    control[ChoiceBox[String]]("generatorChoice").setDisable(blocked)
     control[Button]("startTest").setDisable(blocked)
     control[Button]("resetTest").setDisable(!blocked)
   }
