@@ -1,11 +1,13 @@
 package de.n2online.sonification
 
+import java.awt.image.RenderedImage
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 import javafx.animation.{Animation, AnimationTimer, KeyFrame, Timeline}
 import javafx.application.{Application, Platform}
 import javafx.collections.FXCollections
+import javafx.embed.swing.SwingFXUtils
 import javafx.event.{ActionEvent, EventHandler}
 import javafx.fxml.FXMLLoader
 import javafx.geometry.Insets
@@ -13,11 +15,13 @@ import javafx.scene.canvas.{Canvas, GraphicsContext}
 import javafx.scene.chart.NumberAxis.DefaultFormatter
 import javafx.scene.chart.{AreaChart, LineChart, NumberAxis, XYChart}
 import javafx.scene.control._
+import javafx.scene.image.WritableImage
 import javafx.scene.input.KeyEvent
 import javafx.scene.layout.{AnchorPane, Pane}
-import javafx.scene.{Parent, Scene}
+import javafx.scene.{Parent, Scene, SnapshotParameters}
 import javafx.stage.{FileChooser, Stage}
 import javafx.util.{Callback, Duration}
+import javax.imageio.ImageIO
 
 import de.n2online.sonification.Helpers._
 
@@ -171,12 +175,7 @@ class SuiteUI extends Application {
     setButtonHandler("saveAnalysis", (e) => {
       (Sonification.experiment, Sonification.analysis) match {
         case (Some(exp), Some(analysis)) =>
-          val filename =
-            new SimpleDateFormat("yyyyMMdd-HHmmss").format(new Date) +
-            "_" + exp.textSeed +
-            "_" + exp.meshSize.toString +
-            "_" + exp.route.waypoints.length.toString + "n" +
-            ".analysis"
+          val filename = baseFileName(exp) + ".analysis"
           Analysis.saveToFile(analysis, filename) match {
             case Success(_) => {
               control[Button]("saveAnalysis").setDisable(true)
@@ -223,6 +222,26 @@ class SuiteUI extends Application {
           case _ => /* NO-OP */
         }
         new javafx.scene.Group()
+      }
+    })
+
+    setButtonHandler("saveImage", (e) => {
+      Sonification.experiment match {
+        case Some(exp) =>
+          val filename = baseFileName(exp) + ".png"
+          try {
+            val writableImage = new WritableImage(screen.getWidth.toInt, screen.getHeight.toInt)
+            screen.snapshot(null, writableImage)
+            val renderedImage = SwingFXUtils.fromFXImage(writableImage, null)
+            ImageIO.write(renderedImage, "png", new File(filename))
+            guiDo(() => {
+              control[Button]("saveImage").setDisable(true)
+            })
+            Sonification.log("[INFO] Image saved to \"" + filename + "\"")
+          } catch {
+            case err: Throwable => Sonification.log("[ERROR] Image saving failed: " + err.getMessage)
+          }
+        case _ => Sonification.log("[ERROR] Saving failed, experiment missing")
       }
     })
 
@@ -390,6 +409,7 @@ class SuiteUI extends Application {
       val resultsStep = control[TitledPane]("resultsStep")
       resultsStep.setDisable(false)
       control[Button]("saveAnalysis").setDisable(false)
+      control[Button]("saveImage").setDisable(false)
       control[Accordion]("steps").setExpandedPane(resultsStep)
       blockSetupParameters(false)
     })
@@ -486,5 +506,12 @@ class SuiteUI extends Application {
 
   def focusTab(index: Int) = {
     guiDo(() => control[TabPane]("tabs").getSelectionModel.select(index))
+  }
+
+  def baseFileName(exp: Experiment) = {
+    new SimpleDateFormat("yyyyMMdd-HHmmss").format(new Date) +
+      "_" + exp.textSeed +
+      "_" + exp.meshSize.toString +
+      "_" + exp.route.waypoints.length.toString + "n"
   }
 }
