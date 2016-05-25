@@ -25,11 +25,14 @@ object Helpers {
 
   def tryToInt(text: String) = Try(text.toInt).toOption
 
-  def baseFileName(exp: Experiment) = {
-    new SimpleDateFormat("yyyyMMdd-HHmmss").format(new Date) +
+  def baseFileName(exp: Experiment, append: Option[String] = None) = {
+    sortableDate +
       "_" + exp.textSeed +
       "_" + exp.meshSize.toString +
-      "_" + exp.route.waypoints.length.toString + "n"
+      "_" + exp.route.waypoints.length.toString + "n" +
+      append.fold("")("_" + _)
   }
+
+  def sortableDate = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss").format(new Date)
 }
 

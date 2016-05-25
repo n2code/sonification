@@ -10,5 +10,6 @@
 /out/
 
 #project
-*.analysis
-*.png
+/*.analysis
+/*.png
+/*.log

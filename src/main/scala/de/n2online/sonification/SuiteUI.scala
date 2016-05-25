@@ -42,6 +42,7 @@ class SuiteUI extends Application {
   private var animation: Timeline = null
   private var anglePlot: LineChart[Number, Number] = null
   private var distancePlot: AreaChart[Number, Number] = null
+  private var sgen: String = ""
   private var experimentRunning = false
 
   def control[T](id: String) = scene.lookup("#" + id.stripPrefix("#")).asInstanceOf[T]
@@ -173,7 +174,7 @@ class SuiteUI extends Application {
     setButtonHandler("saveAnalysis", (e) => {
       (Sonification.experiment, Sonification.analysis) match {
         case (Some(exp), Some(analysis)) =>
-          val filename = baseFileName(exp) + ".analysis"
+          val filename = baseFileName(exp, Some(sgen)) + ".analysis"
           Analysis.saveToFile(analysis, filename) match {
             case Success(_) => {
               control[Button]("saveAnalysis").setDisable(true)
@@ -226,7 +227,7 @@ class SuiteUI extends Application {
     setButtonHandler("saveImage", (e) => {
       Sonification.experiment match {
         case Some(exp) =>
-          snapshotControl(screen, screen.getWidth.toInt, screen.getHeight.toInt, baseFileName(exp) + ".png") match {
+          snapshotControl(screen, screen.getWidth.toInt, screen.getHeight.toInt, baseFileName(exp, Some(sgen)) + ".png") match {
             case Failure(err) => Sonification.log("[ERROR] Image saving failed: " + err.getMessage)
             case Success(_) => guiDo(() => control[Button]("saveImage").setDisable(true))
           }
@@ -290,7 +291,8 @@ class SuiteUI extends Application {
 
         //sound
 
-        val generatorReady = sman.setGenerator(control[ChoiceBox[String]]("generatorChoice").getValue match {
+        val generator = control[ChoiceBox[String]]("generatorChoice").getValue
+        val generatorReady = sman.setGenerator(generator match {
           case "BasicBeepVol" => new generators.BasicBeepVol
           case "BasicBeepVolPanned" => new generators.BasicBeepVolPanned(instantUpdate = false)
           case "BasicBeepVolPannedInstant" => new generators.BasicBeepVolPanned(instantUpdate = true)
@@ -299,6 +301,8 @@ class SuiteUI extends Application {
           case "ProximitySaws" => new generators.ProximitySaws
           case _ => return Failure(new IllegalArgumentException("No sound generator selected"))
         })
+        sgen = generator
+        Sonification.log("[INFO] Sound generator: " + sgen)
 
         //graphics
 
