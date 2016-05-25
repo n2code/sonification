@@ -241,6 +241,7 @@ class SuiteUI extends Application {
       "BasicBeepVol",
       "BasicBeepVolPanned",
       "BasicBeepVolPannedInstant",
+      "BasicBeepFreqPannedInstant",
       "PanningScale",
       "ProximitySaws"
     ))
@@ -293,6 +294,7 @@ class SuiteUI extends Application {
           case "BasicBeepVol" => new generators.BasicBeepVol
           case "BasicBeepVolPanned" => new generators.BasicBeepVolPanned(instantUpdate = false)
           case "BasicBeepVolPannedInstant" => new generators.BasicBeepVolPanned(instantUpdate = true)
+          case "BasicBeepFreqPannedInstant" => new generators.BasicBeepFreqPanned
           case "PanningScale" => new generators.PanningScale
           case "ProximitySaws" => new generators.ProximitySaws
           case _ => return Failure(new IllegalArgumentException("No sound generator selected"))
