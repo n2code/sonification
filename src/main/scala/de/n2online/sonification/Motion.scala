@@ -33,6 +33,14 @@ class Motion {
         if (currentTarget.isReached(agent.pos)) {
           currentTarget.visited = true
           reached = Some(currentTarget)
+          Sonification.sound match {
+            case Some(sound) => {
+              if (sound.getGenerator.isDefined) {
+                sound.getGenerator.get.reachedWaypoint()
+              }
+            }
+            case _ => Sonification.log("[ERROR] Sound dead?")
+          }
         }
 
         //updating stats

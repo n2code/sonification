@@ -238,6 +238,7 @@ class SuiteUI extends Application {
     control[TextField]("worldHeight").setText("400")
     control[Slider]("routeLength").setValue(10)
     control[ChoiceBox[String]]("generatorChoice").setItems(FXCollections.observableArrayList(
+      "BasicBeepVol",
       "PanningScale",
       "ProximitySaws"
     ))
@@ -287,6 +288,7 @@ class SuiteUI extends Application {
         //sound
 
         val generatorReady = sman.setGenerator(control[ChoiceBox[String]]("generatorChoice").getValue match {
+          case "BasicBeepVol" => new generators.BasicBeepVol
           case "PanningScale" => new generators.PanningScale
           case "ProximitySaws" => new generators.ProximitySaws
           case _ => return Failure(new IllegalArgumentException("No sound generator selected"))
