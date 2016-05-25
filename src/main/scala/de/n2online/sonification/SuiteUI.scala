@@ -337,6 +337,8 @@ class SuiteUI extends Application {
                   case None => {
                     experimentFinished(exp)
                     stopRunning(exp.simulation)
+                    viz.zoomInOnAgent = false
+                    viz.paint(exp)
                   }
                 }
 
