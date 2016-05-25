@@ -1,6 +1,8 @@
 package de.n2online.sonification
 
 import java.lang.System.nanoTime
+import java.text.SimpleDateFormat
+import java.util.Date
 
 import scala.util.Try
 
@@ -22,5 +24,12 @@ object Helpers {
   }
 
   def tryToInt(text: String) = Try(text.toInt).toOption
+
+  def baseFileName(exp: Experiment) = {
+    new SimpleDateFormat("yyyyMMdd-HHmmss").format(new Date) +
+      "_" + exp.textSeed +
+      "_" + exp.meshSize.toString +
+      "_" + exp.route.waypoints.length.toString + "n"
+  }
 }
 
