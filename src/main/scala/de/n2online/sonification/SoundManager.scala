@@ -56,7 +56,7 @@ class SoundManager {
 
   def freeAll() = {
     execute((s: Server) => {
-      s.defaultGroup.freeAllMsg
+      s ! s.freeAllMsg
     })
   }
 
