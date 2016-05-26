@@ -302,6 +302,7 @@ class SuiteUI extends Application {
         //graphics
 
         viz = new Visualization(gc, worldSize)
+        viz.blindMode = control[CheckBox]("blindMode").selectedProperty().getValue
 
         //calculation (simulation & sound updates) :
 
@@ -346,7 +347,8 @@ class SuiteUI extends Application {
                       guiDo(() => {
                         viz.zoomInOnAgent = control[CheckBox]("agentView").selectedProperty().getValue
                         viz.rotateWithAgent = control[CheckBox]("rotateAgent").selectedProperty().getValue
-                        updateStatus(prog, dist, ang, capinfo)
+                        viz.blindMode = control[CheckBox]("blindMode").selectedProperty().getValue
+                        updateStatus(prog, if (viz.blindMode) "???" else dist, if (viz.blindMode) "???" else ang, capinfo)
                       })
                       reducedUpdateSum = 0
                     }
@@ -355,6 +357,7 @@ class SuiteUI extends Application {
                     experimentFinished(exp)
                     stopRunning(exp.simulation)
                     viz.zoomInOnAgent = false
+                    viz.blindMode = false
                     viz.paint(exp)
                   }
                 }

@@ -5,12 +5,15 @@ import javafx.scene.image.Image
 import javafx.scene.paint.Color
 import javafx.scene.transform.Rotate
 
+import de.n2online.sonification
+
 object Visualization {
   private final val meshNodeRadius = 3
   private final val meshNodeColor = Color.GREY
   private final val meshEdgeColor = Color.LIGHTGREY
   private final val backgroundColor = Color.WHITE
   private final val standbyColor = Color.GREY
+  private final val blindModeColor = Color.BLACK
   private final val agentPathDashes = 5.0
   private final val agentPathColor = Color.DARKBLUE
   private final val agentZoomSquareSize = 200
@@ -23,6 +26,7 @@ class Visualization(val gc: GraphicsContext, val worldSize: Rectangle) {
   final val scaleProportional = true
   var zoomInOnAgent = false
   var rotateWithAgent = false
+  var blindMode = false
 
   private def drawCenteredImage(
                                  image: Image,
@@ -84,8 +88,9 @@ class Visualization(val gc: GraphicsContext, val worldSize: Rectangle) {
     val performanceRect = Rectangle(2 * hypo , 2 * hypo, screen.getWidth / 2 - hypo, screen.getHeight / 2 - hypo)
 
     //background
-    gc.setFill(Visualization.backgroundColor)
+    gc.setFill(if (blindMode) Visualization.blindModeColor else Visualization.backgroundColor)
     gc.fillRect(0, 0, screen.getWidth, screen.getHeight)
+    if (blindMode) return
 
     //agent view
     if (rotateWithAgent && zoomInOnAgent) {
