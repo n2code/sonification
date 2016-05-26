@@ -30,7 +30,7 @@ object Helpers {
       "_" + exp.textSeed +
       "_" + exp.meshSize.toString +
       "_" + exp.route.waypoints.length.toString + "n" +
-      append.fold("")("_" + _)
+      append.fold("")("_" + _.replaceAll("[^\\w]", "-"))
   }
 
   def sortableDate = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss").format(new Date)

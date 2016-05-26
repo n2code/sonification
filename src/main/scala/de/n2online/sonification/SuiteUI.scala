@@ -3,7 +3,7 @@ package de.n2online.sonification
 import java.io.File
 import javafx.animation.{Animation, AnimationTimer, KeyFrame, Timeline}
 import javafx.application.{Application, Platform}
-import javafx.collections.{FXCollections, ObservableList}
+import javafx.collections.FXCollections
 import javafx.embed.swing.SwingFXUtils
 import javafx.event.{ActionEvent, EventHandler}
 import javafx.fxml.FXMLLoader
@@ -24,11 +24,18 @@ import de.n2online.sonification.Helpers._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Failure, Random, Success, Try}
-import collection.JavaConversions._
 
 object SuiteUI {
   private val seedExamples = Array("sonification", "supercollider", "frequency", "amplitude", "phase", "noise", "sine", "sawtooth", "pulse", "envelope", "decay", "reverb", "midi", "opensoundcontrol")
   val maxGraphValues: Int = 200
+  val gens = Map[String, () => Generator](
+    ("Beeper: Volume plain", () => new generators.BasicBeepVol),
+    ("Beeper: Volume (panned)", () => new generators.BasicBeepVolPanned(instantUpdate = false)),
+    ("Beeper: Volume (panned + instant)", () => new generators.BasicBeepVolPanned(instantUpdate = true)),
+    ("Beeper: Frequency plain", () => new generators.BasicBeepFreqPanned),
+    ("PanningScale", () => new generators.PanningScale),
+    ("ProximitySaws", () => new generators.ProximitySaws)
+  )
 }
 
 class SuiteUI extends Application {
@@ -238,15 +245,9 @@ class SuiteUI extends Application {
     control[TextField]("worldWidth").setText("800")
     control[TextField]("worldHeight").setText("400")
     control[Slider]("routeLength").setValue(10)
-    control[ChoiceBox[String]]("generatorChoice").setItems(FXCollections.observableArrayList(
-      "BasicBeepVol",
-      "BasicBeepVolPanned",
-      "BasicBeepVolPannedInstant",
-      "BasicBeepFreqPannedInstant",
-      "PanningScale",
-      "ProximitySaws"
-    ))
-    control[ChoiceBox[String]]("generatorChoice").getSelectionModel.select(0)
+    val selector = control[ChoiceBox[String]]("generatorChoice")
+    SuiteUI.gens.keys.toList.sorted.foreach(selector.itemsProperty().getValue.add(_))
+    selector.getSelectionModel.select(0)
   }
 
   def setButtonHandler(buttonId: String, handler: (ActionEvent) => Unit) = {
@@ -292,15 +293,7 @@ class SuiteUI extends Application {
         //sound
 
         val generator = control[ChoiceBox[String]]("generatorChoice").getValue
-        val generatorReady = sman.setGenerator(generator match {
-          case "BasicBeepVol" => new generators.BasicBeepVol
-          case "BasicBeepVolPanned" => new generators.BasicBeepVolPanned(instantUpdate = false)
-          case "BasicBeepVolPannedInstant" => new generators.BasicBeepVolPanned(instantUpdate = true)
-          case "BasicBeepFreqPannedInstant" => new generators.BasicBeepFreqPanned
-          case "PanningScale" => new generators.PanningScale
-          case "ProximitySaws" => new generators.ProximitySaws
-          case _ => return Failure(new IllegalArgumentException("No sound generator selected"))
-        })
+        val generatorReady = sman.setGenerator(SuiteUI.gens(generator)())
         sgen = generator
         Sonification.log("[INFO] Sound generator: " + sgen)
 
