@@ -8,16 +8,14 @@ import de.sciss.synth.ugen._
 
 class BasicBeepVolPanned(val instantUpdate: Boolean = false) extends Generator {
   private var note = None: Option[Synth]
-  private var notedef = None: Option[SynthDef]
   private var approval = None: Option[Synth]
-  private var approvalDef = None: Option[SynthDef]
 
   private var deltaAcc: Long = 0
   private var lastUpdate: Long = 0
   private val noteDeltaThreshold = 1000
 
   override def initialize(server: Server): Unit = {
-    notedef = Some(SynthDef("NoteGen") {
+    val notedef = Some(SynthDef("NoteGen") {
       val vol = "expVol".kr(0.0)
 
       val freq = 220
@@ -36,42 +34,26 @@ class BasicBeepVolPanned(val instantUpdate: Boolean = false) extends Generator {
     })
     note = Some(notedef.get.play())
 
-    approvalDef = Some(SynthDef("MegaSaw") {
-      val numSaws = 7
-      val freq = "freq".kr(55.0)
-      val acc =
-        VarSaw.ar(freq = List.fill(2)(freq * LinRand(0.99, 1.02)), iphase = 0, width = 0.05) +
-          VarSaw.ar(freq = List.fill(2)(freq * LinRand(0.99, 1.02)), iphase = 0, width = 0.05) +
-          VarSaw.ar(freq = List.fill(2)(freq * LinRand(0.99, 1.02)), iphase = 0, width = 0.05) +
-          VarSaw.ar(freq = List.fill(2)(freq * LinRand(0.99, 1.02)), iphase = 0, width = 0.05) +
-          VarSaw.ar(freq = List.fill(2)(freq * LinRand(0.99, 1.02)), iphase = 0, width = 0.05) +
-          VarSaw.ar(freq = List.fill(2)(freq * LinRand(0.99, 1.02)), iphase = 0, width = 0.05) +
-          VarSaw.ar(freq = List.fill(2)(freq * LinRand(0.99, 1.02)), iphase = 0, width = 0.05)
-
-      import Env.{Segment => Seg}
-      val hi = Seg(0.2, 1)
-      val mid = Seg(0.2, 0.6)
-      val graph = Env(0.001, List(hi, mid, Seg(2.5, 0.001)))
-      val t_trig = "t_trig".tr
-      val env = EnvGen.kr(graph, t_trig, doneAction = 0) //0 damit es retriggerable bleibt
-      Out.ar(List(0, 1), acc * (1.0 / numSaws) * env)
-    })
-    approval = Some(approvalDef.get.play())
+    approval = Some(Common.approvalSynthDef.get.play())
   }
 
-  def assertInitialized = {
-    assert(notedef.isDefined && note.isDefined && approvalDef.isDefined && approval.isDefined)
+  def assertInitialized() = {
+    assert(note.isDefined && approval.isDefined)
   }
 
   override def update(absoluteDistance: Double, correctionAngle: Double): Unit = {
-    assertInitialized
+    assertInitialized()
 
     val expVol = 1.0 - Math.abs(Helpers.wrapToSignedPi(correctionAngle) / Math.PI)
     val signedPan = Math.sin(correctionAngle)
     val now = systemTimeInMilliseconds
     deltaAcc += now - lastUpdate
     if (deltaAcc > noteDeltaThreshold) {
-      note.get.set("t_trig" -> 1.0)
+      note.get.set(
+        "t_trig" -> 1.0,
+        "expVol" -> expVol,
+        "signedPan" -> signedPan
+      )
       deltaAcc = 0
     }
     if (instantUpdate) note.get.set("expVol" -> expVol, "signedPan" -> signedPan)
