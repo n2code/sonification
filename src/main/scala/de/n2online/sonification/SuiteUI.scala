@@ -29,6 +29,7 @@ object SuiteUI {
   private val seedExamples = Array("sonification", "supercollider", "frequency", "amplitude", "phase", "noise", "sine", "sawtooth", "pulse", "envelope", "decay", "reverb", "midi", "opensoundcontrol")
   val maxGraphValues: Int = 200
   val gens = Map[String, () => Generator](
+    ("Silence with reached sound", () => new generators.ApprovalOnly),
     ("Beeper: Volume plain", () => new generators.BasicBeepVol),
     ("Beeper: Volume (panned)", () => new generators.BasicBeepVolPanned(instantUpdate = false)),
     ("Beeper: Volume (panned + instant)", () => new generators.BasicBeepVolPanned(instantUpdate = true)),
@@ -36,6 +37,7 @@ object SuiteUI {
     ("PanningScale", () => new generators.PanningScale),
     ("ProximitySaws", () => new generators.ProximitySaws)
   )
+  val defaultGen = "Silence with reached sound"
 }
 
 class SuiteUI extends Application {
@@ -247,7 +249,7 @@ class SuiteUI extends Application {
     control[Slider]("routeLength").setValue(10)
     val selector = control[ChoiceBox[String]]("generatorChoice")
     SuiteUI.gens.keys.toList.sorted.foreach(selector.itemsProperty().getValue.add(_))
-    selector.getSelectionModel.select(0)
+    selector.getSelectionModel.select(SuiteUI.defaultGen)
   }
 
   def setButtonHandler(buttonId: String, handler: (ActionEvent) => Unit) = {
