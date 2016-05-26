@@ -33,7 +33,8 @@ object SuiteUI {
     ("Beeper: Volume plain", () => new generators.BasicBeepVol),
     ("Beeper: Volume (panned)", () => new generators.BasicBeepVolPanned(instantUpdate = false)),
     ("Beeper: Volume (panned + instant)", () => new generators.BasicBeepVolPanned(instantUpdate = true)),
-    ("Beeper: Frequency plain", () => new generators.BasicBeepFreqPanned),
+    ("Beeper: Frequency plain", () => new generators.BasicBeepFreq),
+    ("Beeper: Frequency (panned)", () => new generators.BasicBeepFreqPanned),
     ("PanningScale", () => new generators.PanningScale),
     ("ProximitySaws", () => new generators.ProximitySaws)
   )
