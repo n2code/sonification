@@ -21,6 +21,7 @@ import javafx.util.{Callback, Duration}
 import javax.imageio.ImageIO
 
 import de.n2online.sonification.Helpers._
+import de.n2online.sonification.generators.Generator
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Failure, Random, Success, Try}
@@ -333,7 +334,7 @@ class SuiteUI extends Application {
                     Sonification.sound match {
                       case Some(sound) => {
                         if (sound.getGenerator.isDefined) {
-                          sound.getGenerator.get.update(exp.agent.targetDistance, exp.agent.targetAngle)
+                          sound.getGenerator.get.update(exp.agent.targetDistance, exp.agent.targetAngle, Some(exp.route))
                         }
                       }
                       case _ => Sonification.log("[ERROR] Sound dead?")

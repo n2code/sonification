@@ -1,6 +1,6 @@
 package de.n2online.sonification.generators
 
-import de.n2online.sonification.Generator
+import de.n2online.sonification.Route
 import de.sciss.synth.Ops._
 import de.sciss.synth._
 import de.sciss.synth.ugen._
@@ -33,7 +33,7 @@ class ProximitySaws extends Generator {
     assert(sawdef.isDefined)
   }
 
-  override def update(absoluteDistance: Double, dummy: Double): Unit = {
+  override def update(absoluteDistance: Double, dummy: Double, route: Option[Route]): Unit = {
     assertInitialized
 
     val newFactor = FastMath.max(0.0, 400.0 - absoluteDistance) / 400

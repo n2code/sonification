@@ -1,7 +1,7 @@
 package de.n2online.sonification.generators
 
 import de.n2online.sonification.Helpers._
-import de.n2online.sonification.{Generator, Helpers}
+import de.n2online.sonification.{Helpers, Route}
 import de.sciss.synth.Ops._
 import de.sciss.synth._
 import de.sciss.synth.ugen._
@@ -34,7 +34,7 @@ class BasicBeepFreqPanned() extends Generator {
     assert(note.isDefined && approval.isDefined)
   }
 
-  override def update(absoluteDistance: Double, correctionAngle: Double): Unit = {
+  override def update(absoluteDistance: Double, correctionAngle: Double, route: Option[Route]): Unit = {
     assertInitialized()
 
     val linAngle = 1.0 - Math.abs(Helpers.wrapToSignedPi(correctionAngle) / Math.PI)

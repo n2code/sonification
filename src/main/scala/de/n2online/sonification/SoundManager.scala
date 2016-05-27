@@ -1,6 +1,7 @@
 package de.n2online.sonification
 
 import de.n2online.sonification.Helpers._
+import de.n2online.sonification.generators.Generator
 import de.sciss.synth._
 
 import scala.concurrent.ExecutionContext.Implicits.global

@@ -1,7 +1,7 @@
 package de.n2online.sonification.generators
 
-import de.n2online.sonification.Generator
 import de.n2online.sonification.Helpers._
+import de.n2online.sonification.Route
 import de.sciss.synth.Ops._
 import de.sciss.synth._
 import de.sciss.synth.ugen._
@@ -41,7 +41,7 @@ class PanningScale extends Generator {
     assert(notedef.isDefined)
   }
 
-  override def update(absoluteDistance: Double, correctionAngle: Double): Unit = {
+  override def update(absoluteDistance: Double, correctionAngle: Double, route: Option[Route]): Unit = {
     assertInitialized
 
     val now = systemTimeInMilliseconds
