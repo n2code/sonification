@@ -1,6 +1,6 @@
 package de.n2online.sonification.generators
 
-import de.n2online.sonification.Route
+import de.n2online.sonification.{Agent, Route}
 import de.sciss.synth.Ops._
 import de.sciss.synth._
 import de.sciss.synth.ugen._
@@ -41,7 +41,7 @@ class ProximitySaws extends Generator {
     synth.get.set("factor" -> newFactor)
   }
 
-  override def reachedWaypoint(): Unit = {
+  override def reachedWaypoint(agent: Agent, route: Route): Unit = {
     /*NO-OP*/
   }
 }

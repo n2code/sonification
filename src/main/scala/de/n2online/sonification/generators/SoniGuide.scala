@@ -1,6 +1,6 @@
 package de.n2online.sonification.generators
 
-import de.n2online.sonification.{Helpers, Route}
+import de.n2online.sonification.{Agent, Helpers, Route}
 import de.sciss.synth.Ops._
 import de.sciss.synth._
 import de.sciss.synth.ugen._
@@ -66,7 +66,7 @@ class SoniGuide() extends Generator {
 
     turner = Some(SynthDef("MegaSaw") {
       val numSaws = 7
-      val freq = LinLin("completion".kr(0.0), 0.0, 1.0, turnerMidi.midicps, "midiTo".kr(48.0).midicps)
+      val freq = LinLin("remaining".kr(0.0), 1.0, 0.0, turnerMidi.midicps, "midiTo".kr(48.0).midicps)
       val acc =
         VarSaw.ar(freq = List.fill(2)(freq * LinRand(0.99, 1.02)), iphase = 0.1, width = 0.05) +
           VarSaw.ar(freq = List.fill(2)(freq * LinRand(0.99, 1.02)), iphase = 0.2, width = 0.05) +
@@ -82,7 +82,7 @@ class SoniGuide() extends Generator {
       val rise = Seg(0.3, -0.5.dbamp)
       val off = Seg(1, 0)
       val graph = Env(0, List(hi, mid, rise, off), loopNode = 0, releaseNode = 2)
-      val gate = "holding".kr(0.0)
+      val gate = "holding".kr(0.0) + "t_trig".tr(0.0)
       val env = EnvGen.kr(graph, gate = gate, doneAction = 0)
 
       Out.ar(List(0, 1), acc * (1.0 / numSaws) * env)
@@ -98,28 +98,42 @@ class SoniGuide() extends Generator {
     val now = Helpers.systemTimeInMilliseconds
     deltaAcc = now - lastUpdate
 
-    val angleDegrees = Math.toDegrees(Helpers.wrapToSignedPi(correctionAngle))
+    val wrappedAngle = Helpers.wrapToSignedPi(correctionAngle)
+    val angleDegrees = Math.toDegrees(wrappedAngle)
     val anglePositive = angleDegrees >= 0
 
     mode match {
-      case "announcer" =>
-        if (deltaAcc >= announcerNoteThreshhold) {
-          announcerQueue match {
-            case next :: after =>
-              announcerNote.get.play(args = List(
-                "midinote" -> next
-              ))
-              announcerQueue = after
-              deltaAcc = 0
-            case Nil =>
+      case "walk" =>
+        if (Math.abs(angleDegrees) > 20) {
+          mode = "warning"
+        } else {
+
+          if (deltaAcc >= announcerNoteThreshhold) {
+            announcerQueue match {
+              case next :: after =>
+                announcerNote.get.play(args = List(
+                  "midinote" -> next
+                ))
+                announcerQueue = after
+                deltaAcc = 0
+              case Nil =>
+            }
           }
+
         }
       case "turn" =>
-        turner.get.set(
-          "completion" -> 0.0,
-          "midiTo" -> (48),
-          "holding" -> 1.0
-        )
+        mode = angleDegrees match {
+          case angle if angle < 3 =>
+            turner.get.set(
+              "holding" -> 0.0
+            )
+            "walk"
+          case _ =>
+            turner.get.set(
+              "remaining" -> Math.min(1.0, Math.max(0.0, Math.abs(wrappedAngle / turnerOldAngle)))
+            )
+            "turn"
+        }
       case "warning" =>
         warningAcc += deltaAcc.toInt
         warningWait = Math.abs(angleDegrees) match {
@@ -128,7 +142,7 @@ class SoniGuide() extends Generator {
               "midiFrom" -> 98,
               "midiTo" -> 98
             ))
-            mode = "blubb"
+            mode = "walk"
             return
           case angle if angle < 20 => 1500
           case angle if angle < 45 => 1000
@@ -152,22 +166,24 @@ class SoniGuide() extends Generator {
             warningAcc = 0
           case _ =>
         }
-      case _ => {
-        if (Math.abs(angleDegrees) > 20) mode = "warning"
-      }
+      case _ => assert(assertion = false, "Illegal mode: " + mode)
     }
 
     lastUpdate = now
   }
 
-  override def reachedWaypoint(): Unit = {
-    mode = "turn"
-    turnerOldAngle = 0
-    turner.get.set(
-      "completion" -> 0.0,
-      "midiTo" -> (48),
-      "holding" -> 1.0
-    )
-    announcerQueue = pentaScale
+  override def reachedWaypoint(agent: Agent, route: Route): Unit = {
+    turnerOldAngle = route.nextWaypoint match {
+      case Some(next) =>
+        mode = "turn"
+        turner.get.set(
+          "remaining" -> 1.0,
+          "midiTo" -> (48),
+          "holding" -> 1.0,
+          "t_trig" -> 1.0
+        )
+        Helpers.wrapToSignedPi(next.getAngleCorrection(agent))
+      case _ => 0
+    }
   }
 }

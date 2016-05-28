@@ -1,6 +1,6 @@
 package de.n2online.sonification.generators
 
-import de.n2online.sonification.{Helpers, Route}
+import de.n2online.sonification.{Agent, Helpers, Route}
 import de.sciss.synth.Ops._
 import de.sciss.synth._
 import de.sciss.synth.ugen._
@@ -39,7 +39,7 @@ class BasicBeepFreq() extends Generator {
     note.get.set("freqLin" -> linAngle, "linVol" -> linAngle)
   }
 
-  override def reachedWaypoint(): Unit = {
+  override def reachedWaypoint(agent: Agent, route: Route): Unit = {
     approval.get.set("t_trig" -> 1)
   }
 }

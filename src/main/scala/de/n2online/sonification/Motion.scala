@@ -36,7 +36,7 @@ class Motion {
           Sonification.sound match {
             case Some(sound) => {
               if (sound.getGenerator.isDefined) {
-                sound.getGenerator.get.reachedWaypoint()
+                sound.getGenerator.get.reachedWaypoint(agent, route)
               }
             }
             case _ => Sonification.log("[ERROR] Sound dead?")
