@@ -5,7 +5,7 @@ import de.sciss.synth.Ops._
 import de.sciss.synth._
 import de.sciss.synth.ugen._
 
-class SoniGuide() extends Generator {
+class SoniGuide(remainingRelativeMode: Boolean = false) extends Generator {
   val pentaScale = List(24, 26, 28, 31, 33, 36, 38, 40, 43, 45, 48).map(_+12*2)
   val pentaCenterIndex = 5
 
@@ -36,7 +36,7 @@ class SoniGuide() extends Generator {
   private var turnerMidi = 36
   private var turnerSteady = false
   private var turnerSteadyAcc = 0
-  private val turnerSteadyTime = 1000
+  private val turnerSteadyTime = 500
   private val turnCompleteSignal = () => {
     warningNote.get.play(args = List(
       "midiFrom" -> correctionSuccessfulMidi,
@@ -44,7 +44,9 @@ class SoniGuide() extends Generator {
     ))
   }
   private val remainingCalc = (angle: Double) => {
-    Math.min(1.0, Math.max(0.0, Math.abs(Helpers.wrapToSignedPi(angle) / turnerOldAngle)))
+    Math.min(1.0, Math.max(0.0,
+      Math.abs(Helpers.wrapToSignedPi(angle) / (if (remainingRelativeMode) turnerOldAngle else Math.PI))
+    ))
   }
 
   private var deltaAcc: Long = 0
