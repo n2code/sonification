@@ -5,7 +5,7 @@ import de.sciss.synth.Ops._
 import de.sciss.synth._
 import de.sciss.synth.ugen._
 
-class SoniGuide(remainingRelativeMode: Boolean = false) extends Generator {
+class SoniGuide(remainingRelativeMode: Boolean = false, panning: Boolean = true) extends Generator {
   val pentaScale = List(24, 26, 28, 31, 33, 36, 38, 40, 43, 45, 48).map(_+12*2)
   val pentaCenterIndex = 5
 
@@ -96,7 +96,9 @@ class SoniGuide(remainingRelativeMode: Boolean = false) extends Generator {
 
       val sig = pure * env
 
-      Out.ar(List(0, 1), sig * vol)
+      val panned = LinPan2.ar(sig, LinLin("signedPan".kr(0.0), -1.0, 1.0, -0.7, 0.7))
+
+      Out.ar(0, panned * vol)
     })
 
     turner = Some(SynthDef("MegaSaw") {
@@ -180,10 +182,7 @@ class SoniGuide(remainingRelativeMode: Boolean = false) extends Generator {
         warningAcc += deltaAcc.toInt
         warningWait = Math.abs(angleDegrees) match {
           case angle if angle < 5 =>
-            warningNote.get.play(args = List(
-              "midiFrom" -> correctionSuccessfulMidi,
-              "midiTo" -> correctionSuccessfulMidi
-            ))
+            turnCompleteSignal()
             setMode("walk")
             return
           case angle if angle < 20 => 1500
@@ -196,11 +195,13 @@ class SoniGuide(remainingRelativeMode: Boolean = false) extends Generator {
             warningStep match {
               case "hint" => warningNote.get.play(args = List(
                 "midiFrom" -> (warningMidi - (if (anglePositive) warningGlissWidth else -warningGlissWidth)),
-                "midiTo" -> warningMidi
+                "midiTo" -> warningMidi,
+                "signedPan" -> (if (panning) if (anglePositive) -1.0 else 1.0 else 0.0)
               ))
               case "ding" => warningNote.get.play(args = List(
                 "midiFrom" -> (warningMidi + (if (anglePositive) 5 else -5)),
-                "midiTo" -> (warningMidi + (if (anglePositive) 5 else -5))
+                "midiTo" -> (warningMidi + (if (anglePositive) 5 else -5)),
+                "signedPan" -> (if (panning) if (anglePositive) -1.0 else 1.0 else 0.0)
               ))
               case "wait" =>
             }
