@@ -1,6 +1,6 @@
 package de.n2online.sonification.generators
 
-import de.n2online.sonification.{Agent, Helpers, Route}
+import de.n2online.sonification.{Agent, Helpers, Route, Sonification}
 import de.sciss.synth.Ops._
 import de.sciss.synth._
 import de.sciss.synth.ugen._
@@ -8,6 +8,8 @@ import de.sciss.synth.ugen._
 class SoniGuide() extends Generator {
   val pentaScale = List(24, 26, 28, 31, 33, 36, 38, 40, 43, 45, 48).map(_+12*2)
   val pentaCenterIndex = 5
+
+  val sync = AnyRef
 
   private var announcerNote: Option[SynthDef] = None
   private var announcerQueue: List[Int] = List()
@@ -29,6 +31,8 @@ class SoniGuide() extends Generator {
   private var turner: Option[Synth] = None
   private var turnerOldAngle: Double = 0
   private var turnerMidi = 36
+
+  private val correctionSuccessfulMidi = warningMidi + 12
 
   private var deltaAcc: Long = 0
   private var lastUpdate: Long = 0
@@ -122,25 +126,29 @@ class SoniGuide() extends Generator {
 
         }
       case "turn" =>
-        mode = angleDegrees match {
-          case angle if angle < 3 =>
+        angleDegrees match {
+          case angle if Math.abs(angle) < 3 =>
             turner.get.set(
+              "remaining" -> 0.0,
               "holding" -> 0.0
             )
-            "walk"
+            warningNote.get.play(args = List(
+              "midiFrom" -> correctionSuccessfulMidi,
+              "midiTo" -> correctionSuccessfulMidi
+            ))
+            mode = "walk"
           case _ =>
             turner.get.set(
               "remaining" -> Math.min(1.0, Math.max(0.0, Math.abs(wrappedAngle / turnerOldAngle)))
             )
-            "turn"
         }
       case "warning" =>
         warningAcc += deltaAcc.toInt
         warningWait = Math.abs(angleDegrees) match {
           case angle if angle < 5 =>
             warningNote.get.play(args = List(
-              "midiFrom" -> 98,
-              "midiTo" -> 98
+              "midiFrom" -> correctionSuccessfulMidi,
+              "midiTo" -> correctionSuccessfulMidi
             ))
             mode = "walk"
             return
@@ -153,7 +161,7 @@ class SoniGuide() extends Generator {
           case (nextWait, nextStep) if warningAcc >= nextWait() =>
             warningStep match {
               case "hint" => warningNote.get.play(args = List(
-                "midiFrom" -> (warningMidi - (if (anglePositive) 2 else -2)),
+                "midiFrom" -> (warningMidi - (if (anglePositive) warningGlissWidth else -warningGlissWidth)),
                 "midiTo" -> warningMidi
               ))
               case "ding" => warningNote.get.play(args = List(
@@ -173,12 +181,12 @@ class SoniGuide() extends Generator {
   }
 
   override def reachedWaypoint(agent: Agent, route: Route): Unit = {
-    turnerOldAngle = route.nextWaypoint match {
+    turnerOldAngle = route.currentWaypoint match {
       case Some(next) =>
         mode = "turn"
         turner.get.set(
           "remaining" -> 1.0,
-          "midiTo" -> (48),
+          "midiTo" -> (turnerMidi + 12),
           "holding" -> 1.0,
           "t_trig" -> 1.0
         )
