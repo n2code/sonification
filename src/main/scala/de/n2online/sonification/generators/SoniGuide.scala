@@ -1,5 +1,7 @@
 package de.n2online.sonification.generators
 
+import java.lang.Math.PI
+
 import de.n2online.sonification.{Agent, Helpers, Route, Sonification}
 import de.sciss.synth.Ops._
 import de.sciss.synth._
@@ -33,7 +35,7 @@ class SoniGuide(remainingRelativeMode: Boolean = false, panning: Boolean = true)
 
   private var turner: Option[Synth] = None
   private var turnerOldAngle: Double = 0
-  private var turnerMidi = 36
+  private val turnerMidi = 36
   private var turnerSteady = false
   private var turnerSteadyAcc = 0
   private val turnerSteadyTime = 500
@@ -43,10 +45,16 @@ class SoniGuide(remainingRelativeMode: Boolean = false, panning: Boolean = true)
       "midiTo" -> correctionSuccessfulMidi
     ))
   }
-  private val remainingCalc = (angle: Double) => {
+  private val turnerRemainingCalc = (angle: Double) => {
     Math.min(1.0, Math.max(0.0,
-      Math.abs(Helpers.wrapToSignedPi(angle) / (if (remainingRelativeMode) turnerOldAngle else Math.PI))
+      Math.abs(Helpers.wrapToSignedPi(angle) / (if (remainingRelativeMode) turnerOldAngle else PI))
     ))
+  }
+  private val turnerPanningCalc = (angle: Double) => {
+    if (panning) Math.sin(angle) else 0
+  }
+  private val turnerVolumeCalc = (angle: Double) => {
+    1 - Math.abs(Helpers.wrapToSignedPi(angle)) / PI
   }
 
   private var deltaAcc: Long = 0
@@ -87,7 +95,7 @@ class SoniGuide(remainingRelativeMode: Boolean = false, panning: Boolean = true)
     })
 
     warningNote = Some(SynthDef("WarningNote") {
-      val vol = -1.dbamp
+      val vol = -2.dbamp
 
       val freq = Line.ar("midiFrom".ir(91.0).midicps, "midiTo".ir(93.0).midicps, 0.05)
       val pure = SinOsc.ar(freq / 2) * 0.1 + SinOsc.ar(freq) * 0.25 + Pulse.ar(freq) * 0.01
@@ -104,14 +112,11 @@ class SoniGuide(remainingRelativeMode: Boolean = false, panning: Boolean = true)
     turner = Some(SynthDef("MegaSaw") {
       val numSaws = 7
       val freq = LinLin("remaining".kr(0.0), 1.0, 0.0, turnerMidi.midicps, "midiTo".kr(48.0).midicps)
-      val acc =
-        VarSaw.ar(freq = List.fill(2)(freq * LinRand(0.99, 1.02)), iphase = 0.1, width = 0.05) +
-          VarSaw.ar(freq = List.fill(2)(freq * LinRand(0.99, 1.02)), iphase = 0.2, width = 0.05) +
-          VarSaw.ar(freq = List.fill(2)(freq * LinRand(0.99, 1.02)), iphase = 0.3, width = 0.05) +
-          VarSaw.ar(freq = List.fill(2)(freq * LinRand(0.99, 1.02)), iphase = 0.4, width = 0.05) +
-          VarSaw.ar(freq = List.fill(2)(freq * LinRand(0.99, 1.02)), iphase = 0.5, width = 0.05) +
-          VarSaw.ar(freq = List.fill(2)(freq * LinRand(0.99, 1.02)), iphase = 0.6, width = 0.05) +
-          VarSaw.ar(freq = List.fill(2)(freq * LinRand(0.99, 1.02)), iphase = 0.7, width = 0.05)
+      val getSaw = (phase: GE) => {
+        VarSaw.ar(freq = freq * LinRand(0.99, 1.02), iphase = phase, width = 0.05)
+      }
+      val accL = getSaw(0.1) + getSaw(0.2) + getSaw(0.3) + getSaw(0.4) + getSaw(0.5) + getSaw(0.6) + getSaw(0.7)
+      val accR = getSaw(0.1) + getSaw(0.2) + getSaw(0.3) + getSaw(0.4) + getSaw(0.5) + getSaw(0.6) + getSaw(0.7)
 
       import Env.{Segment => Seg}
       val hi = Seg(0.1, -3.dbamp)
@@ -122,7 +127,13 @@ class SoniGuide(remainingRelativeMode: Boolean = false, panning: Boolean = true)
       val gate = "holding".kr(0.0) + "t_trig".tr(0.0)
       val env = EnvGen.kr(graph, gate = gate, doneAction = 0)
 
-      Out.ar(List(0, 1), acc * (1.0 / numSaws) * env)
+      val vol = LinLin("vol".kr(1.0), 0.0, 1.0, -12.dbamp, -1.dbamp)
+      val sigL = accL * (1.0 / numSaws) * env * vol
+      val sigR = accR * (1.0 / numSaws) * env * vol
+
+      val panned = Balance2.ar(sigL, sigR, LinLin("signedPan".kr(0.0), -1.0, 1.0, -0.9, 0.9))
+
+      Out.ar(0, panned)
     }.play())
   }
 
@@ -159,7 +170,11 @@ class SoniGuide(remainingRelativeMode: Boolean = false, panning: Boolean = true)
 
         }
       case "turn" =>
-        turner.get.set("remaining" -> remainingCalc(correctionAngle))
+        turner.get.set(
+          "remaining" -> turnerRemainingCalc(correctionAngle),
+          "vol" -> turnerVolumeCalc(correctionAngle),
+          "signedPan" -> turnerPanningCalc(correctionAngle)
+        )
         angleDegrees match {
           case angle if Math.abs(angle) <= 10 =>
             turnerSteady match {
@@ -167,6 +182,8 @@ class SoniGuide(remainingRelativeMode: Boolean = false, panning: Boolean = true)
                 turnCompleteSignal()
                 turner.get.set(
                   "remaining" -> 0.0,
+                  "vol" -> 1.0,
+                  "signedPan" -> 0.0,
                   "holding" -> 0.0
                 )
                 setMode("walk")
@@ -222,6 +239,8 @@ class SoniGuide(remainingRelativeMode: Boolean = false, panning: Boolean = true)
           case angle if Math.abs(Math.toDegrees(angle)) < 10 =>
             turner.get.set(
               "remaining" -> 0.0,
+              "vol" -> 1.0,
+              "signedPan" -> 0.0,
               "midiTo" -> (turnerMidi + 12),
               "holding" -> 0.0,
               "t_trig" -> 1.0

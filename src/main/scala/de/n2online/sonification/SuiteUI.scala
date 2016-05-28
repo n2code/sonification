@@ -37,6 +37,8 @@ object SuiteUI {
     ("Beeper: Frequency plain", () => new generators.BasicBeepFreq),
     ("Beeper: Frequency (panned)", () => new generators.BasicBeepFreqPanned),
     ("SoniGuide", () => new generators.SoniGuide),
+    ("SoniGuide (no pan)", () => new generators.SoniGuide(panning = false)),
+    ("SoniGuide (relative, no pan)", () => new generators.SoniGuide(remainingRelativeMode = true, panning = false)),
     ("PanningScale", () => new generators.PanningScale),
     ("ProximitySaws", () => new generators.ProximitySaws)
   )
