@@ -31,13 +31,32 @@ class SoniGuide() extends Generator {
   private var turner: Option[Synth] = None
   private var turnerOldAngle: Double = 0
   private var turnerMidi = 36
+  private var turnerSteady = false
+  private var turnerSteadyAcc = 0
+  private val turnerSteadyTime = 1000
 
   private val correctionSuccessfulMidi = warningMidi + 12
 
   private var deltaAcc: Long = 0
   private var lastUpdate: Long = 0
-  private var mode = "warning"
+  private var mode = "walk"
 
+  val setMode = (which: String) => {
+    which match {
+      case "walk" =>
+      case "warning" =>
+        warningStep = "hint"
+      case "turn" =>
+        turnerSteady = false
+        turner.get.set(
+          "remaining" -> 1.0,
+          "midiTo" -> (turnerMidi + 12),
+          "holding" -> 1.0,
+          "t_trig" -> 1.0
+        )
+    }
+    mode = which
+  }
 
 
   override def initialize(server: Server): Unit = {
@@ -109,8 +128,7 @@ class SoniGuide() extends Generator {
     mode match {
       case "walk" =>
         if (Math.abs(angleDegrees) > 20) {
-          mode = "warning"
-          warningStep = "hint"
+          setMode("warning")
         } else {
 
           if (deltaAcc >= announcerNoteThreshhold) {
@@ -127,21 +145,27 @@ class SoniGuide() extends Generator {
 
         }
       case "turn" =>
+        turner.get.set("remaining" -> Math.min(1.0, Math.max(0.0, Math.abs(wrappedAngle / turnerOldAngle))))
         angleDegrees match {
-          case angle if Math.abs(angle) < 3 =>
-            turner.get.set(
-              "remaining" -> 0.0,
-              "holding" -> 0.0
-            )
-            warningNote.get.play(args = List(
-              "midiFrom" -> correctionSuccessfulMidi,
-              "midiTo" -> correctionSuccessfulMidi
-            ))
-            mode = "walk"
-          case _ =>
-            turner.get.set(
-              "remaining" -> Math.min(1.0, Math.max(0.0, Math.abs(wrappedAngle / turnerOldAngle)))
-            )
+          case angle if Math.abs(angle) <= 5 =>
+            turnerSteady match {
+              case true if turnerSteadyAcc >= turnerSteadyTime =>
+                turner.get.set(
+                  "remaining" -> 0.0,
+                  "holding" -> 0.0
+                )
+                warningNote.get.play(args = List(
+                  "midiFrom" -> correctionSuccessfulMidi,
+                  "midiTo" -> correctionSuccessfulMidi
+                ))
+                setMode("walk")
+              case true =>
+                turnerSteadyAcc += deltaAcc.toInt
+              case false =>
+                turnerSteadyAcc = 0
+                turnerSteady = true
+            }
+          case _ => turnerSteady = false
         }
       case "warning" =>
         warningAcc += deltaAcc.toInt
@@ -151,7 +175,7 @@ class SoniGuide() extends Generator {
               "midiFrom" -> correctionSuccessfulMidi,
               "midiTo" -> correctionSuccessfulMidi
             ))
-            mode = "walk"
+            setMode("walk")
             return
           case angle if angle < 20 => 1500
           case angle if angle < 45 => 1000
@@ -184,13 +208,7 @@ class SoniGuide() extends Generator {
   override def reachedWaypoint(agent: Agent, route: Route): Unit = {
     turnerOldAngle = route.currentWaypoint match {
       case Some(next) =>
-        mode = "turn"
-        turner.get.set(
-          "remaining" -> 1.0,
-          "midiTo" -> (turnerMidi + 12),
-          "holding" -> 1.0,
-          "t_trig" -> 1.0
-        )
+        setMode("turn")
         Helpers.wrapToSignedPi(next.getAngleCorrection(agent))
       case _ => 0
     }
