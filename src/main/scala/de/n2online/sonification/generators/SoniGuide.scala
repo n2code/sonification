@@ -6,8 +6,6 @@ import de.sciss.synth._
 import de.sciss.synth.ugen._
 
 class SoniGuide() extends Generator {
-  private var approval: Option[Synth] = None
-  private val approvalMidiNote = 36
   val pentaScale = List(24, 26, 28, 31, 33, 36, 38, 40, 43, 45, 48).map(_+12*2)
   val pentaCenterIndex = 5
 
@@ -27,6 +25,10 @@ class SoniGuide() extends Generator {
     ("ding", (() => 300, "wait")),
     ("wait", (() => warningWait, "hint"))
   )
+
+  private var turner: Option[Synth] = None
+  private var turnerOldAngle: Double = 0
+  private var turnerMidi = 36
 
   private var deltaAcc: Long = 0
   private var lastUpdate: Long = 0
@@ -62,7 +64,29 @@ class SoniGuide() extends Generator {
       Out.ar(List(0, 1), sig * vol)
     })
 
-    approval = Some(Common.approvalSynthDef.get.play(args = List("freq" -> approvalMidiNote.midicps)))
+    turner = Some(SynthDef("MegaSaw") {
+      val numSaws = 7
+      val freq = LinLin("completion".kr(0.0), 0.0, 1.0, turnerMidi.midicps, "midiTo".kr(48.0).midicps)
+      val acc =
+        VarSaw.ar(freq = List.fill(2)(freq * LinRand(0.99, 1.02)), iphase = 0.1, width = 0.05) +
+          VarSaw.ar(freq = List.fill(2)(freq * LinRand(0.99, 1.02)), iphase = 0.2, width = 0.05) +
+          VarSaw.ar(freq = List.fill(2)(freq * LinRand(0.99, 1.02)), iphase = 0.3, width = 0.05) +
+          VarSaw.ar(freq = List.fill(2)(freq * LinRand(0.99, 1.02)), iphase = 0.4, width = 0.05) +
+          VarSaw.ar(freq = List.fill(2)(freq * LinRand(0.99, 1.02)), iphase = 0.5, width = 0.05) +
+          VarSaw.ar(freq = List.fill(2)(freq * LinRand(0.99, 1.02)), iphase = 0.6, width = 0.05) +
+          VarSaw.ar(freq = List.fill(2)(freq * LinRand(0.99, 1.02)), iphase = 0.7, width = 0.05)
+
+      import Env.{Segment => Seg}
+      val hi = Seg(0.1, -3.dbamp)
+      val mid = Seg(0.1, -4.dbamp)
+      val rise = Seg(0.3, -0.5.dbamp)
+      val off = Seg(1, 0)
+      val graph = Env(0, List(hi, mid, rise, off), loopNode = 0, releaseNode = 2)
+      val gate = "holding".kr(0.0)
+      val env = EnvGen.kr(graph, gate = gate, doneAction = 0)
+
+      Out.ar(List(0, 1), acc * (1.0 / numSaws) * env)
+    }.play())
   }
 
   def assertInitialized() = {
@@ -78,31 +102,34 @@ class SoniGuide() extends Generator {
     val anglePositive = angleDegrees >= 0
 
     mode match {
-      case "announcer" => {
+      case "announcer" =>
         if (deltaAcc >= announcerNoteThreshhold) {
           announcerQueue match {
-            case next :: after => {
+            case next :: after =>
               announcerNote.get.play(args = List(
                 "midinote" -> next
               ))
               announcerQueue = after
               deltaAcc = 0
-            }
             case Nil =>
           }
         }
-      }
-      case "warning" => {
+      case "turn" =>
+        turner.get.set(
+          "completion" -> 0.0,
+          "midiTo" -> (48),
+          "holding" -> 1.0
+        )
+      case "warning" =>
         warningAcc += deltaAcc.toInt
         warningWait = Math.abs(angleDegrees) match {
-          case angle if angle < 5 => {
+          case angle if angle < 5 =>
             warningNote.get.play(args = List(
               "midiFrom" -> 98,
               "midiTo" -> 98
             ))
             mode = "blubb"
             return
-          }
           case angle if angle < 20 => 1500
           case angle if angle < 45 => 1000
           case angle if angle < 90 => 500
@@ -125,8 +152,6 @@ class SoniGuide() extends Generator {
             warningAcc = 0
           case _ =>
         }
-
-      }
       case _ => {
         if (Math.abs(angleDegrees) > 20) mode = "warning"
       }
@@ -136,7 +161,13 @@ class SoniGuide() extends Generator {
   }
 
   override def reachedWaypoint(): Unit = {
-    approval.get.set("t_trig" -> 1)
+    mode = "turn"
+    turnerOldAngle = 0
+    turner.get.set(
+      "completion" -> 0.0,
+      "midiTo" -> (48),
+      "holding" -> 1.0
+    )
     announcerQueue = pentaScale
   }
 }
