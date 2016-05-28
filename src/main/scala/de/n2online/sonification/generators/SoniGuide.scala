@@ -110,6 +110,7 @@ class SoniGuide() extends Generator {
       case "walk" =>
         if (Math.abs(angleDegrees) > 20) {
           mode = "warning"
+          warningStep = "hint"
         } else {
 
           if (deltaAcc >= announcerNoteThreshhold) {
