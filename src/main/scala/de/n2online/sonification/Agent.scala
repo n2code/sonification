@@ -6,7 +6,7 @@ import org.apache.commons.math3.util.FastMath
 
 object Agent {
   final val maxSpeed: Double = 20
-  final val maxTurnPerSecond: Double = Math.toRadians(90)
+  final val maxTurnPerSecond: Double = Math.toRadians(60)
 }
 
 class Agent(posX: Double, posY: Double, initialOrientation: Double) {

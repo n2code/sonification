@@ -16,6 +16,7 @@ class SoniGuide() extends Generator {
   private var announcerAcc = 0
   private var announcerNoteThreshhold = 100
 
+
   private var warningNote: Option[SynthDef] = None
   private val warningMidi = 84
   private val warningGlissWidth = 1
@@ -28,14 +29,23 @@ class SoniGuide() extends Generator {
     ("wait", (() => warningWait, "hint"))
   )
 
+  private val correctionSuccessfulMidi = warningMidi + 12
+
   private var turner: Option[Synth] = None
   private var turnerOldAngle: Double = 0
   private var turnerMidi = 36
   private var turnerSteady = false
   private var turnerSteadyAcc = 0
   private val turnerSteadyTime = 1000
-
-  private val correctionSuccessfulMidi = warningMidi + 12
+  private val turnCompleteSignal = () => {
+    warningNote.get.play(args = List(
+      "midiFrom" -> correctionSuccessfulMidi,
+      "midiTo" -> correctionSuccessfulMidi
+    ))
+  }
+  private val remainingCalc = (angle: Double) => {
+    Math.min(1.0, Math.max(0.0, Math.abs(Helpers.wrapToSignedPi(angle) / turnerOldAngle)))
+  }
 
   private var deltaAcc: Long = 0
   private var lastUpdate: Long = 0
@@ -145,19 +155,16 @@ class SoniGuide() extends Generator {
 
         }
       case "turn" =>
-        turner.get.set("remaining" -> Math.min(1.0, Math.max(0.0, Math.abs(wrappedAngle / turnerOldAngle))))
+        turner.get.set("remaining" -> remainingCalc(correctionAngle))
         angleDegrees match {
-          case angle if Math.abs(angle) <= 5 =>
+          case angle if Math.abs(angle) <= 10 =>
             turnerSteady match {
               case true if turnerSteadyAcc >= turnerSteadyTime =>
+                turnCompleteSignal()
                 turner.get.set(
                   "remaining" -> 0.0,
                   "holding" -> 0.0
                 )
-                warningNote.get.play(args = List(
-                  "midiFrom" -> correctionSuccessfulMidi,
-                  "midiTo" -> correctionSuccessfulMidi
-                ))
                 setMode("walk")
               case true =>
                 turnerSteadyAcc += deltaAcc.toInt
@@ -206,11 +213,23 @@ class SoniGuide() extends Generator {
   }
 
   override def reachedWaypoint(agent: Agent, route: Route): Unit = {
-    turnerOldAngle = route.currentWaypoint match {
+    route.currentWaypoint match {
       case Some(next) =>
-        setMode("turn")
-        Helpers.wrapToSignedPi(next.getAngleCorrection(agent))
-      case _ => 0
+        Helpers.wrapToSignedPi(next.getAngleCorrection(agent)) match {
+          case angle if Math.abs(Math.toDegrees(angle)) < 10 =>
+            turner.get.set(
+              "remaining" -> 0.0,
+              "midiTo" -> (turnerMidi + 12),
+              "holding" -> 0.0,
+              "t_trig" -> 1.0
+            )
+            turnCompleteSignal()
+            setMode("walk")
+          case angle =>
+            turnerOldAngle = angle
+            setMode("turn")
+        }
+      case _ =>
     }
   }
 }

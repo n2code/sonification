@@ -40,7 +40,7 @@ object SuiteUI {
     ("PanningScale", () => new generators.PanningScale),
     ("ProximitySaws", () => new generators.ProximitySaws)
   )
-  val defaultGen = "Silence with reached sound"
+  val defaultGen = "SoniGuide"
 }
 
 class SuiteUI extends Application {
