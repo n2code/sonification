@@ -2,12 +2,25 @@ package de.n2online.sonification.generators
 
 import java.lang.Math.PI
 
-import de.n2online.sonification.{Agent, Helpers, Route, Sonification}
+import de.n2online.sonification.{Agent, Helpers, Route}
 import de.sciss.synth.Ops._
 import de.sciss.synth._
 import de.sciss.synth.ugen._
 
-class SoniGuide(remainingRelativeMode: Boolean = false, panning: Boolean = true) extends Generator {
+class PentatonicIdeas(remainingRelativeMode: Boolean = false, panning: Boolean = true) extends Generator {
+  /*##### COPY OF SONIGUIDE FOR CREATIVE TESTING #####*/
+
+  val pentaScale = List(24, 26, 28, 31, 33, 36, 38, 40, 43, 45, 48).map(_+12*2)
+  val pentaCenterIndex = 5
+
+  val sync = AnyRef
+
+  private var announcerNote: Option[SynthDef] = None
+  private var announcerQueue: List[Int] = List()
+  private var announcerAcc = 0
+  private var announcerNoteThreshhold = 100
+
+
   private var warningNote: Option[SynthDef] = None
   private val warningMidi = 84
   private val warningGlissWidth = 1
@@ -69,6 +82,20 @@ class SoniGuide(remainingRelativeMode: Boolean = false, panning: Boolean = true)
 
 
   override def initialize(server: Server): Unit = {
+    announcerNote = Some(SynthDef("AnnouncerNote") {
+      val vol = "distanceVol".kr(1.0) * -3.dbamp
+
+      val freq = "midinote".ir(36.0).midicps
+      val pure = SinOsc.ar(freq / 2) * 0.1 + SinOsc.ar(freq) * 0.25 + Pulse.ar(freq) * 0.05
+
+      import Env.{Segment => Seg}
+      val graph = Env(0.001, List(Seg(0.05, 0.dbamp), Seg(0.1, -6.dbamp), Seg(0.5, 0.001)))
+      val env = EnvGen.kr(graph, doneAction = 2)
+
+      val sig = pure * env
+      Out.ar(List(0, 1), sig * vol)
+    })
+
     warningNote = Some(SynthDef("WarningNote") {
       val vol = -2.dbamp
 
@@ -113,7 +140,7 @@ class SoniGuide(remainingRelativeMode: Boolean = false, panning: Boolean = true)
   }
 
   def assertInitialized() = {
-    assert(warningNote.isDefined && turner.isDefined)
+    assert(announcerNote.isDefined)
   }
 
   override def update(absoluteDistance: Double, correctionAngle: Double, route: Option[Route]): Unit = {
@@ -129,6 +156,20 @@ class SoniGuide(remainingRelativeMode: Boolean = false, panning: Boolean = true)
       case "walk" =>
         if (Math.abs(angleDegrees) > 20) {
           setMode("warning")
+        } else {
+
+          if (deltaAcc >= announcerNoteThreshhold) {
+            announcerQueue match {
+              case next :: after =>
+                announcerNote.get.play(args = List(
+                  "midinote" -> next
+                ))
+                announcerQueue = after
+                deltaAcc = 0
+              case Nil =>
+            }
+          }
+
         }
       case "turn" =>
         turner.get.set(
