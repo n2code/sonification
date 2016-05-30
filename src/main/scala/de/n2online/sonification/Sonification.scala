@@ -8,8 +8,10 @@ object Sonification {
   var sound: Option[SoundManager] = None
   var experiment: Option[Experiment] = None
   var analysis: Option[Analysis] = None
+  var scsynth = ""
 
   def main(args: Array[String]) {
+    scsynth = args.toList.headOption.getOrElse("/usr/bin/scsynth")
     javafx.application.Application.launch(classOf[SuiteUI], args: _*)
   }
 

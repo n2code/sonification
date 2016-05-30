@@ -113,7 +113,7 @@ class SuiteUI extends Application {
 
     //sound server
 
-    Sonification.log("[ENGINE] Booting sound server...")
+    Sonification.log("[ENGINE] Booting sound server (" + Sonification.scsynth + ")...")
     startSoundServer().onComplete {
       case Success(srv) => {
         Sonification.log("[ENGINE] scsynth booted (see stdout for details), connection established")

@@ -14,7 +14,7 @@ class SoundManager {
 
   //boot process
   private val cfg = Server.Config()
-  cfg.program = "/usr/bin/scsynth"
+  cfg.program = Sonification.scsynth
   cfg.deviceName = Some("Sonification")
   cfg.outputBusChannels = 2
   private var s: Server = null
