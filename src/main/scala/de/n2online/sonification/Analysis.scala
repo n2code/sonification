@@ -44,7 +44,7 @@ object Analysis {
       Sonification.log(s"[INFO] Loaded archived analysis with ${restored.getDataSetCount} waypoint plots.")
       Success(restored)
     } catch {
-      case _: Throwable => Failure(new RuntimeException("Loading saved analysis failed"))
+      case err: Throwable => Failure(err)
     }
   }
 }

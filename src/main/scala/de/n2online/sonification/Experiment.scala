@@ -1,7 +1,7 @@
 package de.n2online.sonification
 
 import javafx.animation.AnimationTimer
-import javafx.scene.chart.{LineChart, XYChart}
+import javafx.scene.chart.LineChart
 
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D
 

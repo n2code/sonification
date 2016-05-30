@@ -37,13 +37,7 @@ class PanningScale extends Generator {
     })
   }
 
-  def assertInitialized = {
-    assert(notedef.isDefined)
-  }
-
   override def update(absoluteDistance: Double, correctionAngle: Double, route: Option[Route]): Unit = {
-    assertInitialized
-
     val now = systemTimeInMilliseconds
     deltaAcc += now - lastUpdate
     if (deltaAcc > noteDeltaThreshold) {

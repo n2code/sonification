@@ -43,13 +43,12 @@ class SoundManager {
     val p = Promise[Long]()
     val start = systemTimeInMilliseconds
     server.onComplete {
-      case Success(srv) => {
+      case Success(srv) =>
         sync.synchronized {
           collidercode(srv)
         }
         println(successMsg getOrElse "sc-code executed.")
         p.success(systemTimeInMilliseconds - start)
-      }
       case Failure(ex) => println("Could not execute, server future failed")
     }
     p.future

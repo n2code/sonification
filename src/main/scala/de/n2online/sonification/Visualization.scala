@@ -8,22 +8,22 @@ import javafx.scene.transform.Rotate
 import de.n2online.sonification
 
 object Visualization {
-  private final val meshNodeRadius = 3
-  private final val meshNodeColor = Color.GREY
-  private final val meshEdgeColor = Color.LIGHTGREY
-  private final val backgroundColor = Color.WHITE
-  private final val standbyColor = Color.GREY
-  private final val blindModeColor = Color.BLACK
-  private final val agentPathDashes = 5.0
-  private final val agentPathColor = Color.DARKBLUE
-  private final val agentZoomSquareSize = 200
-  private final val character = new Image(getClass.getResourceAsStream("/agent.png"))
-  private final val characterBoundaryTolerance = 3
-  final val FPS = 30
+  private val meshNodeRadius = 3
+  private val meshNodeColor = Color.GREY
+  private val meshEdgeColor = Color.LIGHTGREY
+  private val backgroundColor = Color.WHITE
+  private val standbyColor = Color.GREY
+  private val blindModeColor = Color.BLACK
+  private val agentPathDashes = 5.0
+  private val agentPathColor = Color.DARKBLUE
+  private val agentZoomSquareSize = 200
+  private val character = new Image(getClass.getResourceAsStream("/agent.png"))
+  private val characterBoundaryTolerance = 3
+  val FPS = 30
 }
 
 class Visualization(val gc: GraphicsContext, val worldSize: Rectangle) {
-  final val scaleProportional = true
+  val scaleProportional = true //makes sense, hence locked
   var zoomInOnAgent = false
   var rotateWithAgent = false
   var blindMode = false
@@ -97,7 +97,7 @@ class Visualization(val gc: GraphicsContext, val worldSize: Rectangle) {
       gc.save()
       val matrix: Rotate = new Rotate(Math.toDegrees(-agent.getOrientation - math.Pi / 2), screen.getWidth / 2, screen.getHeight / 2)
       gc.setTransform(matrix.getMxx, matrix.getMyx, matrix.getMxy, matrix.getMyy, matrix.getTx, matrix.getTy)
-      //restored later
+      //gc will be restored later!
     }
 
     //node mesh (performance optimized)
@@ -140,7 +140,7 @@ class Visualization(val gc: GraphicsContext, val worldSize: Rectangle) {
       if (waypoint == route.currentWaypoint.orNull) {
         drawWaypoint(waypoint.node.pos.getX, waypoint.node.pos.getY, Waypoint.thresholdReached, Waypoint.colorCurrentHitbox)
       }
-      //regular mash overlay
+      //regular mesh overlay
       val color =
         if (waypoint.visited) Waypoint.colorVisited
         else if (waypoint == route.currentWaypoint.orNull) Waypoint.colorCurrentCore

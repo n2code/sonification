@@ -1,13 +1,13 @@
 package de.n2online.sonification.generators
 
-import de.n2online.sonification.{Agent, Helpers, Route}
 import de.n2online.sonification.Helpers._
+import de.n2online.sonification.{Agent, Helpers, Route}
 import de.sciss.synth.Ops._
 import de.sciss.synth._
 import de.sciss.synth.ugen._
 
-class BasicBeepVol extends Generator {
-  private var notedef = None: Option[SynthDef]
+class BasicBeepVolume(val panning: Boolean, val instantUpdate: Boolean) extends Generator {
+  private var note = None: Option[Synth]
   private var approval = None: Option[Synth]
 
   private var deltaAcc: Long = 0
@@ -15,7 +15,7 @@ class BasicBeepVol extends Generator {
   private val noteDeltaThreshold = 1000
 
   override def initialize(server: Server): Unit = {
-    notedef = Some(SynthDef("NoteGen") {
+    val notedef = Some(SynthDef("NoteGen") {
       val vol = "expVol".kr(0.0)
 
       val freq = 220
@@ -23,33 +23,34 @@ class BasicBeepVol extends Generator {
 
       import Env.{Segment => Seg}
       val graph = Env(0.001, List(Seg(0.05, 1), Seg(0.1, 0.5.dbamp), Seg(1, 0.001)))
-      val env = EnvGen.kr(graph, doneAction = 2)
+      val t_trig = "t_trig".tr
+      val env = EnvGen.kr(graph, t_trig, doneAction = 0)
 
       val sig = pure * env
 
-      Out.ar(List(0, 1), sig * vol)
+      val panned = Pan2.ar(sig, LinLin("signedPan".kr(0.0), -1.0, 1.0, -0.9, 0.9))
+
+      Out.ar(0, panned * vol)
     })
+    note = Some(notedef.get.play())
 
     approval = Some(Common.approvalSynthDef.get.play())
   }
 
-  def assertInitialized() = {
-    assert(notedef.isDefined && approval.isDefined)
-  }
-
   override def update(absoluteDistance: Double, correctionAngle: Double, route: Option[Route]): Unit = {
-    assertInitialized()
-
+    val expVol = 1.0 - Math.abs(Helpers.wrapToSignedPi(correctionAngle) / Math.PI)
+    val signedPan = Math.sin(correctionAngle)
     val now = systemTimeInMilliseconds
     deltaAcc += now - lastUpdate
     if (deltaAcc > noteDeltaThreshold) {
-
-      Some(notedef.get.play(args = List(
-        "expVol" -> (1.0 - Math.abs(Helpers.wrapToSignedPi(correctionAngle) / Math.PI))
-      )))
-
+      note.get.set(
+        "t_trig" -> 1.0,
+        "expVol" -> expVol,
+        "signedPan" -> (if (panning) signedPan else 0.0)
+      )
       deltaAcc = 0
     }
+    if (instantUpdate) note.get.set("expVol" -> expVol, "signedPan" -> signedPan)
     lastUpdate = now
   }
 

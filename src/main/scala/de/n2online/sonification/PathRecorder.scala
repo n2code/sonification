@@ -52,7 +52,7 @@ class PathRecorder() extends Serializable {
 
     reachedWaypoint match {
       case Some(waypoint) => {
-        //calculate stats
+        //calculate info stats
         waypoint.statUserTimeMilliseconds = Some(tNow - tWaypointTackled)
         waypoint.statStraightDistance = Some(posCurrent.distance(posTargetAcquired))
         waypoint.statUserDistance = Some(accDistance)

@@ -30,17 +30,16 @@ object SuiteUI {
   private val seedExamples = Array("sonification", "supercollider", "frequency", "amplitude", "phase", "noise", "sine", "sawtooth", "pulse", "envelope", "decay", "reverb", "midi", "opensoundcontrol")
   val maxGraphValues: Int = 200
   val gens = Map[String, () => Generator](
-    ("Silence with reached sound", () => new generators.ApprovalOnly),
-    ("Beeper: Volume plain", () => new generators.BasicBeepVol),
-    ("Beeper: Volume (panned)", () => new generators.BasicBeepVolPanned(instantUpdate = false)),
-    ("Beeper: Volume (panned + instant)", () => new generators.BasicBeepVolPanned(instantUpdate = true)),
-    ("Beeper: Frequency plain", () => new generators.BasicBeepFreq),
-    ("Beeper: Frequency (panned)", () => new generators.BasicBeepFreqPanned),
+    ("Silence + reached sound", () => new generators.ApprovalOnly),
+    ("Beeper: Volume plain", () => new generators.BasicBeepVolume(panning = false, instantUpdate = false)),
+    ("Beeper: Volume (panned)", () => new generators.BasicBeepVolume(panning = true, instantUpdate = true)),
+    ("Beeper: Volume (panned but delayed)", () => new generators.BasicBeepVolume(panning = true, instantUpdate = false)),
+    ("Buzzer: Frequency plain", () => new generators.BasicBuzzFrequency(panning = false)),
+    ("Buzzer: Frequency (panned)", () => new generators.BasicBuzzFrequency(panning = true)),
     ("SoniGuide", () => new generators.SoniGuide),
-    ("SoniGuide (no pan)", () => new generators.SoniGuide(panning = false)),
-    ("SoniGuide (relative, no pan)", () => new generators.SoniGuide(remainingRelativeMode = true, panning = false)),
-    ("PanningScale", () => new generators.PanningScale),
-    ("ProximitySaws", () => new generators.ProximitySaws)
+    ("SoniGuide (mono)", () => new generators.SoniGuide(panning = false)),
+    ("SoniGuide (relative + mono)", () => new generators.SoniGuide(remainingRelativeMode = true, panning = false)),
+    ("PanningScale (obsolete)", () => new generators.PanningScale)
   )
   val defaultGen = "SoniGuide"
 }
@@ -56,13 +55,12 @@ class SuiteUI extends Application {
   private var animation: Timeline = null
   private var anglePlot: LineChart[Number, Number] = null
   private var distancePlot: AreaChart[Number, Number] = null
-  private var sgen: String = ""
+  private var soundGenName: String = ""
   private var experimentRunning = false
 
   def control[T](id: String) = scene.lookup("#" + id.stripPrefix("#")).asInstanceOf[T]
 
   override def stop(): Unit = {
-    //TODO: anti-get
     Sonification.sound match {
       case Some(sman) => sman.stopServer()
       case _ => /* not initialized, no need to shut down */
@@ -79,7 +77,7 @@ class SuiteUI extends Application {
     stage.setScene(scene)
     stage.setMinWidth(1024)
     stage.setMinHeight(700)
-    stage.show
+    stage.show()
     Sonification.gui = this
 
     //main graphics area
@@ -136,7 +134,7 @@ class SuiteUI extends Application {
     //bind controls, set default values
 
     setButtonHandler("startTest", (e) => {
-      startExperiment() match {
+      launchExperiment() match {
         case Success(exp) => {
           Sonification.experiment = Some(exp)
           experimentRunning = true
@@ -188,7 +186,7 @@ class SuiteUI extends Application {
     setButtonHandler("saveAnalysis", (e) => {
       (Sonification.experiment, Sonification.analysis) match {
         case (Some(exp), Some(analysis)) =>
-          val filename = baseFileName(exp, Some(sgen)) + ".analysis"
+          val filename = baseFileName(exp, Some(soundGenName)) + ".analysis"
           Analysis.saveToFile(analysis, filename) match {
             case Success(_) => {
               control[Button]("saveAnalysis").setDisable(true)
@@ -241,7 +239,7 @@ class SuiteUI extends Application {
     setButtonHandler("saveImage", (e) => {
       Sonification.experiment match {
         case Some(exp) =>
-          snapshotControl(screen, screen.getWidth.toInt, screen.getHeight.toInt, baseFileName(exp, Some(sgen)) + ".png") match {
+          snapshotControl(screen, screen.getWidth.toInt, screen.getHeight.toInt, baseFileName(exp, Some(soundGenName)) + ".png") match {
             case Failure(err) => Sonification.log("[ERROR] Image saving failed: " + err.getMessage)
             case Success(_) => guiDo(() => control[Button]("saveImage").setDisable(true))
           }
@@ -273,7 +271,7 @@ class SuiteUI extends Application {
     sman.server
   }
 
-  def startExperiment(): Try[Experiment] = {
+  def launchExperiment(): Try[Experiment] = {
     Sonification.sound match {
       case Some(sman) => {
 
@@ -301,8 +299,8 @@ class SuiteUI extends Application {
 
         val generator = control[ChoiceBox[String]]("generatorChoice").getValue
         val generatorReady = sman.setGenerator(SuiteUI.gens(generator)())
-        sgen = generator
-        Sonification.log("[INFO] Sound generator: " + sgen)
+        soundGenName = generator
+        Sonification.log("[INFO] Sound generator: " + soundGenName)
 
         //graphics
 
@@ -316,14 +314,14 @@ class SuiteUI extends Application {
           private var last: Long = 0
           private var deltaSum: Long = 0
           private val recalcThreshold: Long = 10
-          private var reducedUpdateSum: Long = 0
+          private var logUpdateAcc: Long = 0
 
           def handle(tstamp: Long) {
             val now = tstamp / 1000000
             if (last != 0) {
               val delta = now - last
               deltaSum += delta
-              reducedUpdateSum += delta
+              logUpdateAcc += delta
 
               if (deltaSum >= recalcThreshold) {
                 val partial: Double = deltaSum / 1000.0
@@ -343,8 +341,8 @@ class SuiteUI extends Application {
                       case _ => Sonification.log("[ERROR] Sound dead?")
                     }
 
-                    //logging if necessary
-                    if (reducedUpdateSum > 100) {
+                    //do not log every keyframe, this UI stuff is heavy
+                    if (logUpdateAcc > 100) {
                       val prog = exp.route.visited.length.toDouble / exp.route.waypoints.length
                       val dist = f"${exp.agent.targetDistance.toInt}%3s"
                       val ang = f"${Math.toDegrees(exp.agent.targetAngle).toInt}%3s°"
@@ -355,7 +353,7 @@ class SuiteUI extends Application {
                         viz.blindMode = control[CheckBox]("blindMode").selectedProperty().getValue
                         updateStatus(prog, if (viz.blindMode) "???" else dist, if (viz.blindMode) "???" else ang, capinfo)
                       })
-                      reducedUpdateSum = 0
+                      logUpdateAcc = 0
                     }
                   }
                   case None => {

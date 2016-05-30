@@ -2,11 +2,10 @@ package de.n2online.sonification
 
 import de.n2online.sonification.Helpers._
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D
-import org.apache.commons.math3.util.FastMath
 
 object Agent {
-  final val maxSpeed: Double = 20
-  final val maxTurnPerSecond: Double = Math.toRadians(60)
+  val maxSpeed: Double = 20
+  val maxTurnPerSecond: Double = Math.toRadians(60)
 }
 
 class Agent(posX: Double, posY: Double, initialOrientation: Double) {
@@ -23,6 +22,6 @@ class Agent(posX: Double, posY: Double, initialOrientation: Double) {
   }
 
   def move(moveFraction: Double) {
-    pos = pos.add(moveFraction * speed, new Vector2D(FastMath.cos(orientation), FastMath.sin(orientation)))
+    pos = pos.add(moveFraction * speed, new Vector2D(Math.cos(orientation), Math.sin(orientation)))
   }
 }
